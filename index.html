@@ -1118,16 +1118,27 @@
   });
 
   // Форма
-  document.getElementById('leadForm').addEventListener('submit', function(e) {
+  document.getElementById('leadForm').addEventListener('submit', async function(e) {
     e.preventDefault();
 
     const name = this.name.value;
     const phone = this.phone.value;
     const platform = this.platform.value;
 
-    // Здесь подставить свой Telegram bot webhook или другой обработчик
-    // Пример: отправка в Telegram бота
-    // fetch('https://api.telegram.org/bot<TOKEN>/sendMessage', { ... })
+    const TOKEN = '8313089447:AAEqzPGGxDnK1fdxc4Mcdgl3dJm7erU3Ato';
+    const CHAT_ID = '204188164'; // замените после получения chat_id
+
+    const text = `🌸 Новая заявка с Posta\n\n👤 Имя: ${name}\n📱 Контакт: ${phone}\n📲 Соцсети: ${platform || 'не указано'}`;
+
+    try {
+      await fetch(\`https://api.telegram.org/bot\${TOKEN}/sendMessage\`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT_ID, text, parse_mode: 'HTML' })
+      });
+    } catch(e) {
+      console.error('Telegram error:', e);
+    }
 
     // Цель Метрики — раскомментировать когда счётчик будет установлен:
     // if (typeof ym !== 'undefined') ym(XXXXXXXX, 'reachGoal', 'form_submit');
