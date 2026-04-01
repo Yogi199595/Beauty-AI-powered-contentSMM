@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Posta — настройка автопилота</title>
+  <meta name="description" content="Заполните анкету один раз — дальше соцсети работают сами.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #FAF7F2;
+      --warm-white: #FDF9F5;
+      --ink: #1A1612;
+      --ink-soft: #3D3530;
+      --muted: #8C7E76;
+      --accent: #C4956A;
+      --accent-light: #E8D5C0;
+      --accent-dark: #9E7452;
+      --line: rgba(196, 149, 106, 0.2);
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-weight: 300;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: rgba(250,247,242,0.95);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .nav-logo { font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--ink); text-decoration: none; }
+    .nav-logo span { color: var(--accent); font-style: italic; }
+    .nav-steps { display: flex; gap: 6px; align-items: center; }
+    .step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-light); transition: background 0.3s; }
+    .step-dot.active { background: var(--accent); }
+    .step-dot.done { background: var(--accent-dark); }
+
+    /* HERO */
+    .hero {
+      text-align: center;
+      padding: 64px 40px 48px;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero-tag {
+      font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .hero-tag::before, .hero-tag::after { content: ''; width: 24px; height: 1px; background: var(--accent); }
+    .hero-title { font-family: var(--font-display); font-size: clamp(36px, 5vw, 56px); font-weight: 300; line-height: 1.1; margin-bottom: 16px; }
+    .hero-title em { font-style: italic; color: var(--accent); }
+    .hero-sub { font-size: 15px; color: var(--muted); max-width: 460px; margin: 0 auto; }
+
+    /* FORM WRAPPER */
+    .form-wrap { max-width: 680px; margin: 0 auto; padding: 0 24px 80px; }
+
+    /* БЛОК */
+    .block {
+      margin-top: 56px;
+      opacity: 0; transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .block.visible { opacity: 1; transform: translateY(0); }
+
+    .block-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+    .block-num { font-family: var(--font-display); font-size: 48px; font-weight: 300; color: var(--accent-light); line-height: 1; flex-shrink: 0; }
+    .block-title { font-family: var(--font-display); font-size: 26px; font-weight: 400; color: var(--ink); }
+
+    /* ПОЛЯ */
+    .field { margin-bottom: 24px; }
+    .field-label { font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: 0.04em; margin-bottom: 8px; display: block; }
+    .field-hint { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: block; }
+    .field-required { color: var(--accent); }
+
+    input[type="text"], input[type="tel"], textarea, select {
+      width: 100%;
+      background: var(--warm-white);
+      border: 1px solid var(--line);
+      padding: 14px 18px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      border-radius: 0;
+      appearance: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      background: #fff;
+    }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    textarea { resize: vertical; min-height: 100px; }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238C7E76' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+      cursor: pointer;
+    }
+
+    /* РАДИО / ЧЕКБОКС */
+    .options { display: flex; flex-direction: column; gap: 2px; }
+    .options.row { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+
+    .option-item { display: flex; align-items: center; gap: 12px; padding: 13px 18px; background: var(--warm-white); border: 1px solid var(--line); cursor: pointer; transition: all 0.2s; user-select: none; }
+    .option-item:hover { border-color: var(--accent); background: #fff; }
+    .option-item.selected { border-color: var(--accent); background: rgba(196,149,106,0.06); }
+    .option-item input { display: none; }
+    .option-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--accent-light); flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .option-item.selected .option-dot { background: var(--accent); border-color: var(--accent); }
+    .option-item.selected .option-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; }
+    .option-check { width: 16px; height: 16px; border: 1.5px solid var(--accent-light); flex-shrink: 0; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .option-item.selected .option-check { background: var(--accent); border-color: var(--accent); }
+    .option-item.selected .option-check::after { content: '✓'; color: white; font-size: 11px; line-height: 1; }
+    .option-text { font-size: 14px; color: var(--ink-soft); }
+
+    /* ЧАСТОТА — слайдер */
+    .freq-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+    .freq-item { padding: 16px 12px; background: var(--warm-white); border: 1px solid var(--line); text-align: center; cursor: pointer; transition: all 0.2s; }
+    .freq-item:hover { border-color: var(--accent); }
+    .freq-item.selected { border-color: var(--accent); background: rgba(196,149,106,0.06); }
+    .freq-num { font-family: var(--font-display); font-size: 32px; font-weight: 300; color: var(--accent); line-height: 1; }
+    .freq-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+
+    /* ЗАГРУЗКА ФОТО */
+    .upload-zone {
+      border: 1.5px dashed var(--accent-light);
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--warm-white);
+      position: relative;
+    }
+    .upload-zone:hover { border-color: var(--accent); background: rgba(196,149,106,0.04); }
+    .upload-zone.has-files { border-color: var(--accent); }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+    .upload-title { font-size: 14px; color: var(--ink-soft); margin-bottom: 6px; }
+    .upload-hint { font-size: 12px; color: var(--muted); }
+    .upload-count { font-size: 13px; color: var(--accent-dark); margin-top: 10px; font-weight: 500; display: none; }
+
+    /* ПРОГРЕСС */
+    .progress-bar { height: 2px; background: var(--line); margin-bottom: 0; }
+    .progress-fill { height: 100%; background: var(--accent); transition: width 0.4s ease; width: 0%; }
+
+    /* SUBMIT */
+    .submit-section { margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--line); text-align: center; }
+    .submit-note { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+    .btn-submit {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 20px 56px;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-block;
+    }
+    .btn-submit:hover { background: var(--accent-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(196,149,106,0.3); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* SUCCESS */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 100px 40px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .success-icon { font-family: var(--font-display); font-size: 80px; color: var(--accent); line-height: 1; margin-bottom: 32px; }
+    .success-title { font-family: var(--font-display); font-size: 48px; font-weight: 300; margin-bottom: 16px; }
+    .success-title em { font-style: italic; color: var(--accent); }
+    .success-text { font-size: 15px; color: var(--muted); line-height: 1.7; }
+
+    /* FOOTER */
+    footer { padding: 32px 40px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+    .footer-logo { font-family: var(--font-display); font-size: 18px; color: var(--ink); }
+    .footer-logo span { color: var(--accent); font-style: italic; }
+    .footer-note { font-size: 12px; color: var(--muted); }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .hero { padding: 48px 20px 36px; }
+      .form-wrap { padding: 0 16px 60px; }
+      .freq-options { grid-template-columns: 1fr; }
+      footer { padding: 24px 20px; flex-direction: column; gap: 8px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<nav>
+  <a href="/" class="nav-logo">Po<span>sta</span></a>
+  <div class="nav-steps">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+    <div class="step-dot" id="dot4"></div>
+    <div class="step-dot" id="dot5"></div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-tag">Настройка автопилота</div>
+  <h1 class="hero-title">Расскажите о себе — <em>один раз</em></h1>
+  <p class="hero-sub">5-7 минут на заполнение. Дальше соцсети работают сами, пока вы принимаете клиентов.</p>
+</section>
+
+<div class="form-wrap" id="formWrap">
+  <form id="onboardForm">
+
+    <!-- БЛОК 1 -->
+    <div class="block" id="block1">
+      <div class="block-header">
+        <div class="block-num">01</div>
+        <div class="block-title">О вас</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Как вас зовут? <span class="field-required">*</span></label>
+        <input type="text" name="name" placeholder="Анна" required>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Телефон <span class="field-required">*</span></label>
+        <input type="tel" name="phone" id="phoneInput" placeholder="+7 (___) ___-__-__" required>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Ваша специализация <span class="field-required">*</span></label>
+        <div class="options" id="spec-options">
+          <label class="option-item" onclick="selectOption(this, 'spec-options', false)">
+            <input type="radio" name="specialization" value="Ногтевой сервис">
+            <div class="option-dot"></div>
+            <span class="option-text">Ногтевой сервис</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'spec-options', false)">
+            <input type="radio" name="specialization" value="Брови / ресницы">
+            <div class="option-dot"></div>
+            <span class="option-text">Брови / ресницы</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'spec-options', false)">
+            <input type="radio" name="specialization" value="Волосы">
+            <div class="option-dot"></div>
+            <span class="option-text">Волосы</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'spec-options', false)">
+            <input type="radio" name="specialization" value="Массаж">
+            <div class="option-dot"></div>
+            <span class="option-text">Массаж</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'spec-options', false)">
+            <input type="radio" name="specialization" value="Другое">
+            <div class="option-dot"></div>
+            <span class="option-text">Другое</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Город и район <span class="field-required">*</span></label>
+        <span class="field-hint">Используем для геотегов — например: Москва, Митино</span>
+        <input type="text" name="city" placeholder="Москва, Митино" required>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Как работаете?</label>
+        <div class="options" id="work-options">
+          <label class="option-item" onclick="selectOption(this, 'work-options', false)">
+            <input type="radio" name="work_format" value="Дома у себя">
+            <div class="option-dot"></div>
+            <span class="option-text">Дома у себя</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'work-options', false)">
+            <input type="radio" name="work_format" value="Кабинет в аренде">
+            <div class="option-dot"></div>
+            <span class="option-text">Кабинет в аренде</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'work-options', false)">
+            <input type="radio" name="work_format" value="Выезд к клиенту">
+            <div class="option-dot"></div>
+            <span class="option-text">Выезд к клиенту</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'work-options', false)">
+            <input type="radio" name="work_format" value="Салон">
+            <div class="option-dot"></div>
+            <span class="option-text">Салон</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- БЛОК 2 -->
+    <div class="block" id="block2">
+      <div class="block-header">
+        <div class="block-num">02</div>
+        <div class="block-title">Про бизнес</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Название бренда или аккаунта</label>
+        <span class="field-hint">Если есть — например: @nail_anna или «Студия Анны»</span>
+        <input type="text" name="brand" placeholder="@nail_anna">
+      </div>
+
+      <div class="field">
+        <label class="field-label">Ваши услуги и примерные цены <span class="field-required">*</span></label>
+        <span class="field-hint">Напишите что делаете и сколько стоит — AI будет упоминать в постах</span>
+        <textarea name="services" placeholder="Маникюр — 2000₽&#10;Педикюр — 2500₽&#10;Покрытие гель-лак — 500₽" required></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Чем вы отличаетесь от других мастеров?</label>
+        <span class="field-hint">Материалы, подход, специализация, опыт — всё что важно клиентам</span>
+        <textarea name="usp" placeholder="Работаю только с материалами Gel Polish Pro, без запаха. Опыт 6 лет. Специализируюсь на укреплении ногтей."></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Есть акции или спецпредложения?</label>
+        <input type="text" name="promo" placeholder="Скидка 20% на первый визит / Нет">
+      </div>
+    </div>
+
+    <!-- БЛОК 3 -->
+    <div class="block" id="block3">
+      <div class="block-header">
+        <div class="block-num">03</div>
+        <div class="block-title">Ваш стиль</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Как общаетесь с клиентами? <span class="field-required">*</span></label>
+        <div class="options" id="tone-options">
+          <label class="option-item" onclick="selectOption(this, 'tone-options', false)">
+            <input type="radio" name="tone" value="По-дружески, на ты">
+            <div class="option-dot"></div>
+            <span class="option-text">По-дружески, на «ты»</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'tone-options', false)">
+            <input type="radio" name="tone" value="Профессионально, на вы">
+            <div class="option-dot"></div>
+            <span class="option-text">Профессионально, на «вы»</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'tone-options', false)">
+            <input type="radio" name="tone" value="Смешанно">
+            <div class="option-dot"></div>
+            <span class="option-text">Смешанно</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Эмодзи в постах?</label>
+        <div class="options row" id="emoji-options">
+          <label class="option-item" onclick="selectOption(this, 'emoji-options', false)" style="flex:1;min-width:140px;">
+            <input type="radio" name="emoji" value="Да, активно">
+            <div class="option-dot"></div>
+            <span class="option-text">Да, активно 🌸</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'emoji-options', false)" style="flex:1;min-width:140px;">
+            <input type="radio" name="emoji" value="Немного">
+            <div class="option-dot"></div>
+            <span class="option-text">Немного ✨</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'emoji-options', false)" style="flex:1;min-width:140px;">
+            <input type="radio" name="emoji" value="Без эмодзи">
+            <div class="option-dot"></div>
+            <span class="option-text">Без эмодзи</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Тон постов</label>
+        <div class="options" id="style-options">
+          <label class="option-item" onclick="selectOption(this, 'style-options', false)">
+            <input type="radio" name="post_style" value="Душевно и тепло">
+            <div class="option-dot"></div>
+            <span class="option-text">Душевно и тепло — как подруга</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'style-options', false)">
+            <input type="radio" name="post_style" value="Коротко и по делу">
+            <div class="option-dot"></div>
+            <span class="option-text">Коротко и по делу</span>
+          </label>
+          <label class="option-item" onclick="selectOption(this, 'style-options', false)">
+            <input type="radio" name="post_style" value="Экспертно и профессионально">
+            <div class="option-dot"></div>
+            <span class="option-text">Экспертно и профессионально</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- БЛОК 4 -->
+    <div class="block" id="block4">
+      <div class="block-header">
+        <div class="block-num">04</div>
+        <div class="block-title">Соцсети</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Куда публикуем? <span class="field-required">*</span></label>
+        <div class="options" id="social-options">
+          <div class="option-item" data-value="Instagram" data-type="checkbox">
+            <div class="option-check"></div>
+            <span class="option-text">Instagram</span>
+          </div>
+          <div class="option-item" data-value="ВКонтакте" data-type="checkbox">
+            <div class="option-check"></div>
+            <span class="option-text">ВКонтакте</span>
+          </div>
+          <div class="option-item" data-value="Telegram" data-type="checkbox">
+            <div class="option-check"></div>
+            <span class="option-text">Telegram</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Ссылки на аккаунты</label>
+        <span class="field-hint">Instagram, VK, Telegram — по одной в строку</span>
+        <textarea name="links" placeholder="instagram.com/nail_anna&#10;vk.com/nail_anna&#10;t.me/nail_anna" style="min-height:80px;"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Как часто публикуем?</label>
+        <div class="freq-options" id="freq-options">
+          <div class="freq-item" onclick="selectFreq(this, 'Каждый день')">
+            <div class="freq-num">7</div>
+            <div class="freq-label">постов в неделю</div>
+          </div>
+          <div class="freq-item selected" onclick="selectFreq(this, '3-4 раза в неделю')">
+            <div class="freq-num">3–4</div>
+            <div class="freq-label">поста в неделю</div>
+          </div>
+          <div class="freq-item" onclick="selectFreq(this, '2-3 раза в неделю')">
+            <div class="freq-num">2–3</div>
+            <div class="freq-label">поста в неделю</div>
+          </div>
+        </div>
+        <input type="hidden" name="frequency" id="freqValue" value="3-4 раза в неделю">
+      </div>
+    </div>
+
+    <!-- БЛОК 5 -->
+    <div class="block" id="block5">
+      <div class="block-header">
+        <div class="block-num">05</div>
+        <div class="block-title">Фото работ</div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Загрузите 5–10 фото ваших работ</label>
+        <span class="field-hint">Лучшие работы которые хотите показывать клиентам. JPG, PNG — до 10 МБ каждое.</span>
+        <div class="upload-zone" id="uploadZone">
+          <input type="file" name="photos" id="photoInput" multiple accept="image/*" onchange="updateFileCount(this)">
+          <div class="upload-icon">✦</div>
+          <div class="upload-title">Нажмите или перетащите фото сюда</div>
+          <div class="upload-hint">Хорошее фото при дневном свете — уже половина успеха</div>
+          <div class="upload-count" id="uploadCount"></div>
+        </div>
+      </div>
+
+      <div class="field" style="background:rgba(196,149,106,0.08);border-left:3px solid var(--accent);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:16px;">
+        <div style="font-size:13px;color:var(--ink-soft);line-height:1.6;">
+          <strong style="color:var(--accent-dark);">Не знаете как снять?</strong><br>
+          Мы подготовили простую инструкцию — 5 минут и фото как у профи
+        </div>
+        <a href="/photo-guide.html" target="_blank" style="flex-shrink:0;background:var(--accent);color:white;padding:10px 18px;font-family:var(--font-body);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;text-decoration:none;white-space:nowrap;transition:background 0.2s;" onmouseover="this.style.background='var(--accent-dark)'" onmouseout="this.style.background='var(--accent)'">Инструкция →</a>
+      </div>
+    </div>
+
+    <!-- SUBMIT -->
+    <div class="submit-section">
+      <p class="submit-note">После отправки мы свяжемся с вами в течение 24 часов и покажем первый контент-план.</p>
+      <button class="btn-submit" type="submit" id="submitBtn">Запустить автопилот →</button>
+      <p style="font-size:12px;color:var(--muted);margin-top:16px;">Нажимая кнопку, вы соглашаетесь на <a href="/privacy.html" style="color:var(--muted);">обработку персональных данных</a></p>
+    </div>
+
+  </form>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">✦</div>
+  <h2 class="success-title">Автопилот <em>включён</em></h2>
+  <p class="success-text">Мы получили все данные и скоро свяжемся с вами.<br>В течение 24 часов пришлём первый контент-план на согласование.</p>
+</div>
+
+<footer>
+  <div class="footer-logo">Po<span>sta</span></div>
+  <div class="footer-note">© 2026 — Posta · ИП Соболев Андрей Владимирович</div>
+</footer>
+
+<script>
+  const TOKEN = '8313089447:AAEqzPGGxDnK1fdxc4Mcdgl3dJm7erU3Ato';
+  const CHAT_ID = '204188164';
+
+  // Маска телефона
+  const phoneInput = document.getElementById('phoneInput');
+  phoneInput.addEventListener('input', function() {
+    let val = this.value.replace(/\D/g, '');
+    if (val.startsWith('8')) val = '7' + val.slice(1);
+    if (!val.startsWith('7')) val = '7' + val;
+    val = val.slice(0, 11);
+    let f = '+7';
+    if (val.length > 1) f += ' (' + val.slice(1, 4);
+    if (val.length >= 4) f += ') ' + val.slice(4, 7);
+    if (val.length >= 7) f += '-' + val.slice(7, 9);
+    if (val.length >= 9) f += '-' + val.slice(9, 11);
+    this.value = f;
+  });
+  phoneInput.addEventListener('focus', function() { if (!this.value) this.value = '+7 ('; });
+  phoneInput.addEventListener('keydown', function(e) { if (e.key === 'Backspace' && this.value === '+7 (') { this.value = ''; e.preventDefault(); } });
+
+  // Выбор опций (радио — через label+input как раньше)
+  function selectOption(el, groupId, isCheckbox) {
+    if (isCheckbox) {
+      el.classList.toggle('selected');
+    } else {
+      document.querySelectorAll('#' + groupId + ' .option-item').forEach(i => i.classList.remove('selected'));
+      el.classList.add('selected');
+      el.querySelector('input').checked = true;
+    }
+    updateProgress();
+  }
+
+  // Чекбоксы соцсетей (div-based, без input)
+  document.querySelectorAll('#social-options .option-item').forEach(item => {
+    item.addEventListener('click', function() {
+      this.classList.toggle('selected');
+      updateProgress();
+    });
+  });
+
+  // Частота
+  function selectFreq(el, value) {
+    document.querySelectorAll('.freq-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('freqValue').value = value;
+  }
+
+  // Файлы
+  function updateFileCount(input) {
+    const count = input.files.length;
+    const countEl = document.getElementById('uploadCount');
+    const zone = document.getElementById('uploadZone');
+    if (count > 0) {
+      countEl.textContent = `Выбрано фото: ${count}`;
+      countEl.style.display = 'block';
+      zone.classList.add('has-files');
+    } else {
+      countEl.style.display = 'none';
+      zone.classList.remove('has-files');
+    }
+  }
+
+  // Прогресс
+  function updateProgress() {
+    const form = document.getElementById('onboardForm');
+    const required = form.querySelectorAll('[required]');
+    let filled = 0;
+    required.forEach(f => { if (f.value && f.value.length > 2) filled++; });
+    const pct = Math.min(100, Math.round((filled / required.length) * 100));
+    document.getElementById('progressFill').style.width = pct + '%';
+
+    // Обновляем точки навигации
+    const blocks = ['block1','block2','block3','block4','block5'];
+    blocks.forEach((id, i) => {
+      const dot = document.getElementById('dot' + (i+1));
+      const block = document.getElementById(id);
+      const rect = block.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.6) {
+        dot.classList.add('active');
+      }
+    });
+  }
+
+  // Анимация блоков
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.block').forEach(b => observer.observe(b));
+
+  window.addEventListener('scroll', updateProgress);
+  document.querySelectorAll('input, textarea').forEach(f => f.addEventListener('input', updateProgress));
+
+  // Отправка
+  document.getElementById('onboardForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Отправляем...';
+
+    const f = this;
+    const data = new FormData(f);
+
+    const socials = [];
+    document.querySelectorAll('#social-options .option-item.selected').forEach(i => socials.push(i.dataset.value));
+
+    const text = [
+      '🌸 Новый онбординг — Posta',
+      '',
+      `👤 Имя: ${data.get('name')}`,
+      `📱 Телефон: ${data.get('phone')}`,
+      `💅 Специализация: ${data.get('specialization') || '—'}`,
+      `📍 Город: ${data.get('city')}`,
+      `🏠 Формат работы: ${data.get('work_format') || '—'}`,
+      '',
+      `🏷 Бренд: ${data.get('brand') || '—'}`,
+      `💰 Услуги и цены:\n${data.get('services')}`,
+      `⭐ Отличие: ${data.get('usp') || '—'}`,
+      `🎁 Акции: ${data.get('promo') || '—'}`,
+      '',
+      `💬 Тон: ${data.get('tone') || '—'}`,
+      `✨ Эмодзи: ${data.get('emoji') || '—'}`,
+      `📝 Стиль постов: ${data.get('post_style') || '—'}`,
+      '',
+      `📲 Соцсети: ${socials.join(', ') || '—'}`,
+      `🔗 Аккаунты:\n${data.get('links') || '—'}`,
+      `📅 Частота: ${data.get('frequency')}`,
+      '',
+      `📸 Фото: ${document.getElementById('photoInput').files.length} шт.`
+    ].join('\n');
+
+    try {
+      await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: CHAT_ID, text })
+      });
+    } catch(err) { console.error(err); }
+
+    document.getElementById('formWrap').style.display = 'none';
+    document.getElementById('successScreen').style.display = 'block';
+    document.getElementById('progressFill').style.width = '100%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+</script>
+</body>
+</html>
