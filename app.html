@@ -276,7 +276,7 @@
 
 <!-- ══ AUTH SCREEN ══ -->
 <div class="screen active" id="authScreen">
-  <div class="auth-box">
+  <div class="auth-box" id="authBox">
     <div class="auth-logo" style="text-align:center;">Po<span>sta</span></div>
 
     <div class="auth-tabs">
@@ -570,6 +570,18 @@ let freqVal = '3-4 поста в неделю';
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', async () => {
+  // Обрабатываем токен из URL после подтверждения email
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.replace('#', ''));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    if (accessToken) {
+      await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+      window.location.hash = '';
+    }
+  }
+
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
@@ -610,10 +622,16 @@ async function register() {
   btn.disabled = true; btn.textContent = 'Создаём аккаунт...';
   const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name } } });
   if (error) { showErr(errEl, translateError(error.message)); btn.disabled = false; btn.textContent = 'Создать аккаунт →'; return; }
-  // Создаём профиль
-  if (data.user) {
-    await sb.from('profiles').upsert({ id: data.user.id, name, email, created_at: new Date().toISOString() });
-  }
+  // Показываем экран "проверьте почту"
+  document.getElementById('authBox').innerHTML = \`
+    <div style="text-align:center;padding:20px 0;">
+      <div style="font-family:var(--font-display);font-size:64px;color:var(--accent);line-height:1;margin-bottom:24px;">✦</div>
+      <h2 style="font-family:var(--font-display);font-size:32px;font-weight:300;color:var(--cream);margin-bottom:16px;">Проверьте <em style='font-style:italic;color:var(--accent);'>почту</em></h2>
+      <p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin-bottom:8px;">Мы отправили письмо на <strong style='color:var(--cream);'>\${email}</strong></p>
+      <p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin-bottom:32px;">Перейдите по ссылке в письме — и вы окажетесь в личном кабинете.</p>
+      <p style="font-size:12px;color:rgba(250,247,242,0.3);">Письмо не пришло? Проверьте папку «Спам»</p>
+    </div>
+  \`;
 }
 
 async function login() {
