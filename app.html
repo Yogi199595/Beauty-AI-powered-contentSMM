@@ -384,10 +384,7 @@
         <label class="field-label">Имя <span class="field-req">*</span></label>
         <input type="text" id="f-name" placeholder="Анна">
       </div>
-      <div class="field">
-        <label class="field-label">Телефон</label>
-        <input type="tel" id="f-phone" placeholder="+7 (___) ___-__-__">
-      </div>
+
       <div class="field">
         <label class="field-label">Специализация <span class="field-req">*</span></label>
         <div class="options" id="opt-spec">
@@ -802,8 +799,12 @@ async function finish() {
 
 async function saveProfile(data) {
   profile = { ...profile, ...data };
-  const { error } = await sb.from('profiles').upsert({ id: currentUser.id, ...profile, updated_at: new Date().toISOString() });
-  if (error) console.error('Save error:', error);
+  const payload = { id: currentUser.id, ...profile, updated_at: new Date().toISOString() };
+  const { error } = await sb.from('profiles').upsert(payload, { onConflict: 'id' }).select();
+  if (error) {
+    console.error('Save error:', error.message);
+    alert('Ошибка сохранения: ' + error.message);
+  }
 }
 
 function showSave(id) {
