@@ -63,18 +63,29 @@
     .auth-form.hidden { display: none; }
 
     .auth-input {
-      background: rgba(250,247,242,0.06);
-      border: 1px solid rgba(250,247,242,0.12);
+      background: #2D2420 !important;
+      border: 1px solid rgba(250,247,242,0.15);
       padding: 16px 20px;
       font-family: var(--font-body);
       font-size: 14px;
-      color: var(--cream);
+      color: #FAF7F2 !important;
+      -webkit-text-fill-color: #FAF7F2 !important;
       outline: none;
       transition: border-color 0.2s;
       width: 100%;
+      border-radius: 0;
     }
-    .auth-input::placeholder { color: rgba(250,247,242,0.3); }
-    .auth-input:focus { border-color: var(--accent); background: rgba(196,149,106,0.06); }
+    .auth-input::placeholder { color: rgba(250,247,242,0.4) !important; }
+    .auth-input:focus { border-color: var(--accent); background: #352A24 !important; }
+    .auth-input:-webkit-autofill,
+    .auth-input:-webkit-autofill:hover,
+    .auth-input:-webkit-autofill:focus {
+      -webkit-text-fill-color: #FAF7F2 !important;
+      -webkit-box-shadow: 0 0 0px 1000px #2D2420 inset !important;
+      box-shadow: 0 0 0px 1000px #2D2420 inset !important;
+      border-color: rgba(250,247,242,0.15);
+      caret-color: #FAF7F2;
+    }
 
     .auth-btn {
       background: var(--accent);
@@ -280,7 +291,7 @@
       <input class="auth-input" type="password" id="regPass" placeholder="Пароль (минимум 6 символов)" autocomplete="new-password">
       <div class="auth-error" id="regError"></div>
       <button class="auth-btn" id="regBtn" onclick="register()">Создать аккаунт →</button>
-      <p class="auth-note">Первый месяц бесплатно · Без карты</p>
+      <p class="auth-note">Первый месяц бесплатно </p>
     </div>
 
     <!-- ВХОД -->
