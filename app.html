@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Posta — личный кабинет</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cream: #FAF7F2;
+      --warm-white: #FDF9F5;
+      --ink: #1A1612;
+      --ink-soft: #3D3530;
+      --muted: #8C7E76;
+      --accent: #C4956A;
+      --accent-light: #E8D5C0;
+      --accent-dark: #9E7452;
+      --line: rgba(196,149,106,0.2);
+      --green: #4CAF50;
+      --font-display: 'Cormorant Garamond', serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--cream); color: var(--ink); font-family: var(--font-body); font-weight: 300; line-height: 1.6; min-height: 100vh; }
+
+    /* ── SCREENS ── */
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: flex; }
+
+    /* ── AUTH SCREEN ── */
+    #authScreen {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      background: var(--ink);
+      position: relative;
+      overflow: hidden;
+    }
+    #authScreen::before {
+      content: '✦';
+      position: absolute;
+      font-family: var(--font-display);
+      font-size: 600px;
+      color: rgba(196,149,106,0.04);
+      top: -100px; right: -100px;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .auth-logo { font-family: var(--font-display); font-size: 32px; font-weight: 400; color: var(--cream); margin-bottom: 48px; letter-spacing: 0.02em; }
+    .auth-logo span { color: var(--accent); font-style: italic; }
+
+    .auth-box { width: 100%; max-width: 400px; position: relative; z-index: 1; }
+    .auth-tabs { display: flex; margin-bottom: 32px; border-bottom: 1px solid rgba(196,149,106,0.2); }
+    .auth-tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .auth-form { display: flex; flex-direction: column; gap: 12px; }
+    .auth-form.hidden { display: none; }
+
+    .auth-input {
+      background: rgba(250,247,242,0.06);
+      border: 1px solid rgba(250,247,242,0.12);
+      padding: 16px 20px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--cream);
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    .auth-input::placeholder { color: rgba(250,247,242,0.3); }
+    .auth-input:focus { border-color: var(--accent); background: rgba(196,149,106,0.06); }
+
+    .auth-btn {
+      background: var(--accent);
+      color: var(--cream);
+      padding: 18px;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+    .auth-btn:hover { background: var(--accent-dark); }
+    .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .auth-error { font-size: 13px; color: #E57373; text-align: center; padding: 8px; display: none; }
+    .auth-note { font-size: 12px; color: rgba(250,247,242,0.3); text-align: center; margin-top: 16px; }
+
+    /* ── DASHBOARD SCREEN ── */
+    #dashScreen { flex-direction: column; }
+
+    /* NAV */
+    .dash-nav {
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      background: rgba(250,247,242,0.95);
+      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .dash-logo { font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--ink); text-decoration: none; }
+    .dash-logo span { color: var(--accent); font-style: italic; }
+    .dash-nav-right { display: flex; align-items: center; gap: 20px; }
+    .dash-user { font-size: 13px; color: var(--muted); }
+    .dash-logout { font-size: 12px; color: var(--muted); cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.2s; background: none; border: none; font-family: var(--font-body); }
+    .dash-logout:hover { color: var(--accent); }
+
+    /* PROGRESS BAR */
+    .onboard-progress { padding: 0 40px; background: var(--warm-white); border-bottom: 1px solid var(--line); }
+    .progress-steps { display: flex; max-width: 800px; margin: 0 auto; }
+    .prog-step { flex: 1; padding: 16px 0; text-align: center; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); position: relative; cursor: pointer; }
+    .prog-step::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--line); }
+    .prog-step.active { color: var(--accent); }
+    .prog-step.active::after { background: var(--accent); }
+    .prog-step.done { color: var(--accent-dark); }
+    .prog-step.done::after { background: var(--accent-dark); }
+
+    /* CONTENT */
+    .dash-content { flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding: 48px 40px 80px; }
+
+    /* STEP PANELS */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    .panel-title { font-family: var(--font-display); font-size: clamp(32px,4vw,48px); font-weight: 300; margin-bottom: 8px; }
+    .panel-title em { font-style: italic; color: var(--accent); }
+    .panel-sub { font-size: 15px; color: var(--muted); margin-bottom: 40px; }
+
+    /* FIELDS */
+    .field { margin-bottom: 20px; }
+    .field-label { font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: 0.04em; margin-bottom: 8px; display: block; }
+    .field-hint { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: block; }
+    .field-req { color: var(--accent); }
+
+    input[type="text"], input[type="tel"], input[type="email"], textarea, select {
+      width: 100%;
+      background: var(--warm-white);
+      border: 1px solid var(--line);
+      padding: 14px 18px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 300;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+      appearance: none;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); background: #fff; }
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+    textarea { resize: vertical; min-height: 90px; }
+
+    /* OPTIONS */
+    .options { display: flex; flex-direction: column; gap: 2px; }
+    .options.row { flex-direction: row; flex-wrap: wrap; gap: 8px; }
+    .opt { display: flex; align-items: center; gap: 12px; padding: 13px 18px; background: var(--warm-white); border: 1px solid var(--line); cursor: pointer; transition: all 0.2s; user-select: none; }
+    .opt:hover { border-color: var(--accent); }
+    .opt.selected { border-color: var(--accent); background: rgba(196,149,106,0.06); }
+    .opt-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--accent-light); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .opt.selected .opt-dot { background: var(--accent); border-color: var(--accent); }
+    .opt.selected .opt-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; }
+    .opt-check { width: 16px; height: 16px; border: 1.5px solid var(--accent-light); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .opt.selected .opt-check { background: var(--accent); border-color: var(--accent); }
+    .opt.selected .opt-check::after { content: '✓'; color: white; font-size: 11px; }
+    .opt-text { font-size: 14px; color: var(--ink-soft); }
+
+    /* FREQ */
+    .freq-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+    .freq-item { padding: 16px 12px; background: var(--warm-white); border: 1px solid var(--line); text-align: center; cursor: pointer; transition: all 0.2s; }
+    .freq-item:hover, .freq-item.selected { border-color: var(--accent); background: rgba(196,149,106,0.06); }
+    .freq-num { font-family: var(--font-display); font-size: 32px; font-weight: 300; color: var(--accent); line-height: 1; }
+    .freq-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
+
+    /* UPLOAD */
+    .upload-zone { border: 1.5px dashed var(--accent-light); padding: 48px 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--warm-white); position: relative; }
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(196,149,106,0.04); }
+    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+    .upload-icon { font-size: 36px; opacity: 0.3; margin-bottom: 12px; }
+    .upload-title { font-size: 15px; color: var(--ink-soft); margin-bottom: 6px; }
+    .upload-hint { font-size: 12px; color: var(--muted); }
+
+    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: 8px; margin-top: 16px; }
+    .photo-thumb { aspect-ratio: 1; border-radius: 4px; overflow: hidden; position: relative; background: var(--accent-light); }
+    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .photo-thumb .thumb-del { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; color: white; }
+    .photo-thumb .thumb-status { position: absolute; bottom: 4px; left: 4px; font-size: 9px; padding: 2px 6px; border-radius: 10px; background: rgba(0,0,0,0.6); color: white; }
+    .photo-thumb .thumb-status.ok { background: rgba(76,175,80,0.85); }
+
+    /* BUTTONS */
+    .btn-primary {
+      background: var(--ink); color: var(--cream);
+      padding: 18px 40px; border: none;
+      font-family: var(--font-body); font-size: 13px;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s; display: inline-block;
+    }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 18px 32px; font-family: var(--font-body); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-row { display: flex; gap: 12px; margin-top: 40px; align-items: center; flex-wrap: wrap; }
+
+    /* STATUS CARD */
+    .status-card { padding: 24px 28px; border: 1px solid var(--line); background: var(--warm-white); margin-bottom: 16px; display: flex; align-items: center; gap: 16px; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .status-dot.green { background: var(--green); box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
+    .status-dot.amber { background: var(--accent); box-shadow: 0 0 0 3px rgba(196,149,106,0.15); }
+    .status-dot.gray { background: var(--muted); }
+    .status-text { flex: 1; }
+    .status-title { font-size: 14px; font-weight: 500; color: var(--ink); }
+    .status-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    /* DASHBOARD HOME */
+    .dash-greeting { font-family: var(--font-display); font-size: clamp(28px,3.5vw,42px); font-weight: 300; margin-bottom: 8px; }
+    .dash-greeting em { font-style: italic; color: var(--accent); }
+    .dash-greet-sub { font-size: 15px; color: var(--muted); margin-bottom: 40px; }
+
+    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 32px; }
+    .dash-tile { padding: 28px 24px; background: var(--warm-white); border: 1px solid var(--line); }
+    .dash-tile-num { font-family: var(--font-display); font-size: 48px; font-weight: 300; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+    .dash-tile-label { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+
+    .action-btn { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; background: var(--warm-white); border: 1px solid var(--line); cursor: pointer; transition: all 0.2s; margin-bottom: 2px; text-decoration: none; color: var(--ink); }
+    .action-btn:hover { border-color: var(--accent); background: rgba(196,149,106,0.04); }
+    .action-btn-text { font-size: 14px; font-weight: 400; }
+    .action-btn-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .action-btn-arrow { color: var(--accent); font-size: 18px; }
+
+    /* SAVE MSG */
+    .save-msg { font-size: 13px; color: var(--green); display: none; align-items: center; gap: 6px; }
+    .save-msg.visible { display: flex; }
+
+    /* POSTMYPOST KEY */
+    .pmp-box { background: rgba(196,149,106,0.08); border-left: 3px solid var(--accent); padding: 20px 24px; margin-top: 16px; }
+    .pmp-box p { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
+    .pmp-box a { color: var(--accent); }
+
+    footer { padding: 24px 40px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+
+    @media (max-width: 640px) {
+      .dash-nav { padding: 14px 20px; }
+      .onboard-progress { padding: 0 20px; }
+      .prog-step { font-size: 10px; padding: 12px 4px; }
+      .dash-content { padding: 32px 20px 60px; }
+      .dash-grid { grid-template-columns: 1fr; }
+      .freq-grid { grid-template-columns: 1fr; }
+      .btn-row { flex-direction: column; }
+      .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+      footer { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ══ -->
+<div class="screen active" id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo" style="text-align:center;">Po<span>sta</span></div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tabReg" onclick="switchTab('reg')">Регистрация</div>
+      <div class="auth-tab" id="tabLogin" onclick="switchTab('login')">Войти</div>
+    </div>
+
+    <!-- РЕГИСТРАЦИЯ -->
+    <div class="auth-form" id="formReg">
+      <input class="auth-input" type="text" id="regName" placeholder="Ваше имя" autocomplete="name">
+      <input class="auth-input" type="email" id="regEmail" placeholder="Email" autocomplete="email">
+      <input class="auth-input" type="password" id="regPass" placeholder="Пароль (минимум 6 символов)" autocomplete="new-password">
+      <div class="auth-error" id="regError"></div>
+      <button class="auth-btn" id="regBtn" onclick="register()">Создать аккаунт →</button>
+      <p class="auth-note">Первый месяц бесплатно · Без карты</p>
+    </div>
+
+    <!-- ВХОД -->
+    <div class="auth-form hidden" id="formLogin">
+      <input class="auth-input" type="email" id="loginEmail" placeholder="Email" autocomplete="email">
+      <input class="auth-input" type="password" id="loginPass" placeholder="Пароль" autocomplete="current-password">
+      <div class="auth-error" id="loginError"></div>
+      <button class="auth-btn" id="loginBtn" onclick="login()">Войти →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD SCREEN ══ -->
+<div class="screen" id="dashScreen">
+
+  <!-- NAV -->
+  <nav class="dash-nav">
+    <a href="/" class="dash-logo">Po<span>sta</span></a>
+    <div class="dash-nav-right">
+      <span class="dash-user" id="navUserEmail"></span>
+      <button class="dash-logout" onclick="logout()">Выйти</button>
+    </div>
+  </nav>
+
+  <!-- PROGRESS -->
+  <div class="onboard-progress">
+    <div class="progress-steps">
+      <div class="prog-step active" id="prog0" onclick="goStep(0)">Главная</div>
+      <div class="prog-step" id="prog1" onclick="goStep(1)">О вас</div>
+      <div class="prog-step" id="prog2" onclick="goStep(2)">Бизнес</div>
+      <div class="prog-step" id="prog3" onclick="goStep(3)">Стиль</div>
+      <div class="prog-step" id="prog4" onclick="goStep(4)">Соцсети</div>
+      <div class="prog-step" id="prog5" onclick="goStep(5)">Фото</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="dash-content">
+
+    <!-- STEP 0: ГЛАВНАЯ -->
+    <div class="step-panel active" id="step0">
+      <div class="dash-greeting">Привет, <em id="greetName">мастер</em> 👋</div>
+      <p class="dash-greet-sub">Настройте автопилот — займёт 10 минут. Дальше соцсети работают сами.</p>
+
+      <div id="statusCards">
+        <div class="status-card">
+          <div class="status-dot gray" id="dot-profile"></div>
+          <div class="status-text">
+            <div class="status-title">Анкета не заполнена</div>
+            <div class="status-sub" id="sub-profile">Расскажите о себе и своём бизнесе</div>
+          </div>
+          <button class="btn-primary" style="padding:12px 24px;font-size:12px;" onclick="goStep(1)">Заполнить</button>
+        </div>
+        <div class="status-card">
+          <div class="status-dot gray" id="dot-photos"></div>
+          <div class="status-text">
+            <div class="status-title">Фото не загружены</div>
+            <div class="status-sub" id="sub-photos">Нужно минимум 5 фото ваших работ</div>
+          </div>
+          <button class="btn-secondary" style="padding:12px 24px;font-size:12px;" onclick="goStep(5)">Загрузить</button>
+        </div>
+        <div class="status-card">
+          <div class="status-dot gray" id="dot-social"></div>
+          <div class="status-text">
+            <div class="status-title">Соцсети не подключены</div>
+            <div class="status-sub">Укажите какие платформы публикуем</div>
+          </div>
+          <button class="btn-secondary" style="padding:12px 24px;font-size:12px;" onclick="goStep(4)">Настроить</button>
+        </div>
+      </div>
+
+      <div style="margin-top:32px;">
+        <div class="action-btn" onclick="goStep(1)">
+          <div><div class="action-btn-text">Заполнить анкету</div><div class="action-btn-sub">О вас, бизнесе и стиле постов</div></div>
+          <div class="action-btn-arrow">→</div>
+        </div>
+        <a class="action-btn" href="/photo-guide.html" target="_blank">
+          <div><div class="action-btn-text">Как снять хорошее фото</div><div class="action-btn-sub">Инструкция — 5 минут</div></div>
+          <div class="action-btn-arrow">↗</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- STEP 1: О ВАС -->
+    <div class="step-panel" id="step1">
+      <h2 class="panel-title">О <em>вас</em></h2>
+      <p class="panel-sub">Базовая информация — на её основе AI подберёт геотеги и хэштеги</p>
+
+      <div class="field">
+        <label class="field-label">Имя <span class="field-req">*</span></label>
+        <input type="text" id="f-name" placeholder="Анна">
+      </div>
+      <div class="field">
+        <label class="field-label">Телефон</label>
+        <input type="tel" id="f-phone" placeholder="+7 (___) ___-__-__">
+      </div>
+      <div class="field">
+        <label class="field-label">Специализация <span class="field-req">*</span></label>
+        <div class="options" id="opt-spec">
+          <div class="opt" data-val="Ногтевой сервис" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Ногтевой сервис</span></div>
+          <div class="opt" data-val="Брови / ресницы" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Брови / ресницы</span></div>
+          <div class="opt" data-val="Волосы" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Волосы</span></div>
+          <div class="opt" data-val="Массаж" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Массаж</span></div>
+          <div class="opt" data-val="Другое" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Другое</span></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Город и район <span class="field-req">*</span></label>
+        <span class="field-hint">Для геотегов — например: Москва, Митино</span>
+        <input type="text" id="f-city" placeholder="Москва, Митино">
+      </div>
+      <div class="field">
+        <label class="field-label">Формат работы</label>
+        <div class="options" id="opt-work">
+          <div class="opt" data-val="Дома у себя" onclick="pickOpt(this,'opt-work',false)"><div class="opt-dot"></div><span class="opt-text">Дома у себя</span></div>
+          <div class="opt" data-val="Кабинет в аренде" onclick="pickOpt(this,'opt-work',false)"><div class="opt-dot"></div><span class="opt-text">Кабинет в аренде</span></div>
+          <div class="opt" data-val="Выезд к клиенту" onclick="pickOpt(this,'opt-work',false)"><div class="opt-dot"></div><span class="opt-text">Выезд к клиенту</span></div>
+          <div class="opt" data-val="Салон" onclick="pickOpt(this,'opt-work',false)"><div class="opt-dot"></div><span class="opt-text">Салон</span></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="saveStep1()">Сохранить и продолжить →</button>
+        <div class="save-msg" id="save1"><span>✓</span> Сохранено</div>
+      </div>
+    </div>
+
+    <!-- STEP 2: БИЗНЕС -->
+    <div class="step-panel" id="step2">
+      <h2 class="panel-title">Про <em>бизнес</em></h2>
+      <p class="panel-sub">AI будет использовать эти данные при генерации постов</p>
+
+      <div class="field">
+        <label class="field-label">Название бренда или аккаунта</label>
+        <input type="text" id="f-brand" placeholder="@nail_anna или Студия Анны">
+      </div>
+      <div class="field">
+        <label class="field-label">Услуги и цены <span class="field-req">*</span></label>
+        <span class="field-hint">Что делаете и сколько стоит</span>
+        <textarea id="f-services" placeholder="Маникюр — 2000₽&#10;Педикюр — 2500₽&#10;Гель-лак — 500₽"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">Чем отличаетесь?</label>
+        <textarea id="f-usp" placeholder="Опыт 6 лет, работаю только с безвредными материалами..."></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">Акции или спецпредложения</label>
+        <input type="text" id="f-promo" placeholder="Скидка 20% на первый визит / Нет">
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(1)">← Назад</button>
+        <button class="btn-primary" onclick="saveStep2()">Сохранить и продолжить →</button>
+        <div class="save-msg" id="save2"><span>✓</span> Сохранено</div>
+      </div>
+    </div>
+
+    <!-- STEP 3: СТИЛЬ -->
+    <div class="step-panel" id="step3">
+      <h2 class="panel-title">Ваш <em>стиль</em></h2>
+      <p class="panel-sub">Настроим tone of voice — AI будет писать как вы</p>
+
+      <div class="field">
+        <label class="field-label">Как общаетесь с клиентами? <span class="field-req">*</span></label>
+        <div class="options" id="opt-tone">
+          <div class="opt" data-val="По-дружески, на ты" onclick="pickOpt(this,'opt-tone',false)"><div class="opt-dot"></div><span class="opt-text">По-дружески, на «ты»</span></div>
+          <div class="opt" data-val="Профессионально, на вы" onclick="pickOpt(this,'opt-tone',false)"><div class="opt-dot"></div><span class="opt-text">Профессионально, на «вы»</span></div>
+          <div class="opt" data-val="Смешанно" onclick="pickOpt(this,'opt-tone',false)"><div class="opt-dot"></div><span class="opt-text">Смешанно</span></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Эмодзи в постах?</label>
+        <div class="options row" id="opt-emoji">
+          <div class="opt" data-val="Да, активно" onclick="pickOpt(this,'opt-emoji',false)" style="flex:1;min-width:120px;"><div class="opt-dot"></div><span class="opt-text">Да 🌸</span></div>
+          <div class="opt" data-val="Немного" onclick="pickOpt(this,'opt-emoji',false)" style="flex:1;min-width:120px;"><div class="opt-dot"></div><span class="opt-text">Немного ✨</span></div>
+          <div class="opt" data-val="Без эмодзи" onclick="pickOpt(this,'opt-emoji',false)" style="flex:1;min-width:120px;"><div class="opt-dot"></div><span class="opt-text">Без</span></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Тон постов</label>
+        <div class="options" id="opt-style">
+          <div class="opt" data-val="Душевно и тепло" onclick="pickOpt(this,'opt-style',false)"><div class="opt-dot"></div><span class="opt-text">Душевно и тепло — как подруга</span></div>
+          <div class="opt" data-val="Коротко и по делу" onclick="pickOpt(this,'opt-style',false)"><div class="opt-dot"></div><span class="opt-text">Коротко и по делу</span></div>
+          <div class="opt" data-val="Экспертно" onclick="pickOpt(this,'opt-style',false)"><div class="opt-dot"></div><span class="opt-text">Экспертно и профессионально</span></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(2)">← Назад</button>
+        <button class="btn-primary" onclick="saveStep3()">Сохранить и продолжить →</button>
+        <div class="save-msg" id="save3"><span>✓</span> Сохранено</div>
+      </div>
+    </div>
+
+    <!-- STEP 4: СОЦСЕТИ -->
+    <div class="step-panel" id="step4">
+      <h2 class="panel-title">Соц<em>сети</em></h2>
+      <p class="panel-sub">Куда публикуем и как часто</p>
+
+      <div class="field">
+        <label class="field-label">Платформы <span class="field-req">*</span></label>
+        <div class="options" id="opt-social">
+          <div class="opt" data-val="Instagram" onclick="pickOpt(this,'opt-social',true)"><div class="opt-check"></div><span class="opt-text">Instagram</span></div>
+          <div class="opt" data-val="ВКонтакте" onclick="pickOpt(this,'opt-social',true)"><div class="opt-check"></div><span class="opt-text">ВКонтакте</span></div>
+          <div class="opt" data-val="Telegram" onclick="pickOpt(this,'opt-social',true)"><div class="opt-check"></div><span class="opt-text">Telegram</span></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Ссылки на аккаунты</label>
+        <textarea id="f-links" placeholder="instagram.com/nail_anna&#10;vk.com/nail_anna" style="min-height:70px;"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">Частота публикаций</label>
+        <div class="freq-grid" id="freqGrid">
+          <div class="freq-item" onclick="pickFreq(this,'7 постов в неделю')"><div class="freq-num">7</div><div class="freq-label">в неделю</div></div>
+          <div class="freq-item selected" onclick="pickFreq(this,'3-4 поста в неделю')"><div class="freq-num">3–4</div><div class="freq-label">в неделю</div></div>
+          <div class="freq-item" onclick="pickFreq(this,'2-3 поста в неделю')"><div class="freq-num">2–3</div><div class="freq-label">в неделю</div></div>
+        </div>
+        <input type="hidden" id="f-freq" value="3-4 поста в неделю">
+      </div>
+
+      <div class="pmp-box">
+        <p><strong style="color:var(--accent-dark);">Подключение Postmypost</strong><br>
+        Для автопубликации нужен API ключ вашего аккаунта на <a href="https://postmypost.io" target="_blank">postmypost.io</a>. Зарегистрируйтесь там, подключите свои соцсети, затем вставьте API ключ ниже.</p>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label class="field-label">API ключ Postmypost</label>
+        <input type="text" id="f-pmpkey" placeholder="pmp_xxxxxxxxxxxxxxxx">
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(3)">← Назад</button>
+        <button class="btn-primary" onclick="saveStep4()">Сохранить и продолжить →</button>
+        <div class="save-msg" id="save4"><span>✓</span> Сохранено</div>
+      </div>
+    </div>
+
+    <!-- STEP 5: ФОТО -->
+    <div class="step-panel" id="step5">
+      <h2 class="panel-title">Фото <em>работ</em></h2>
+      <p class="panel-sub">Загрузите 5–10 лучших работ — AI будет использовать их для постов</p>
+
+      <div class="upload-zone" id="uploadZone">
+        <input type="file" id="photoInput" multiple accept="image/*" onchange="handleFiles(this.files)">
+        <div class="upload-icon">✦</div>
+        <div class="upload-title">Нажмите или перетащите фото сюда</div>
+        <div class="upload-hint">JPG, PNG · до 10 МБ · минимум 5 фото</div>
+      </div>
+
+      <div class="photo-grid" id="photoGrid"></div>
+
+      <div style="margin-top:16px;">
+        <a href="/photo-guide.html" target="_blank" style="font-size:13px;color:var(--accent);text-decoration:underline;">Как снять хорошее фото →</a>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(4)">← Назад</button>
+        <button class="btn-primary" id="finishBtn" onclick="finish()">Готово — запустить автопилот →</button>
+        <div class="save-msg" id="save5"><span>✓</span> Фото сохранены</div>
+      </div>
+    </div>
+
+  </div><!-- /dash-content -->
+
+  <footer>© 2026 — Posta · ИП Соболев Андрей Владимирович · ИНН 420534014211</footer>
+</div><!-- /dashScreen -->
+
+<script>
+const SUPA_URL = 'https://pluvtxjkkgvsqamgboux.supabase.co';
+const SUPA_KEY = 'sb_publishable_WH6zffTWifKp8CZngkDw5w_Rw_IyZcg';
+const { createClient } = supabase;
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+let currentUser = null;
+let profile = {};
+let currentStep = 0;
+let uploadedPhotos = [];
+let freqVal = '3-4 поста в неделю';
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await enterDash();
+  }
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      await enterDash();
+    } else if (event === 'SIGNED_OUT') {
+      showScreen('authScreen');
+    }
+  });
+});
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── AUTH ──
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.auth-form').forEach(f => f.classList.add('hidden'));
+  document.getElementById('tab' + (tab === 'reg' ? 'Reg' : 'Login')).classList.add('active');
+  document.getElementById('form' + (tab === 'reg' ? 'Reg' : 'Login')).classList.remove('hidden');
+}
+
+async function register() {
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim();
+  const pass = document.getElementById('regPass').value;
+  const errEl = document.getElementById('regError');
+  const btn = document.getElementById('regBtn');
+  errEl.style.display = 'none';
+  if (!name || !email || !pass) { showErr(errEl, 'Заполните все поля'); return; }
+  if (pass.length < 6) { showErr(errEl, 'Пароль минимум 6 символов'); return; }
+  btn.disabled = true; btn.textContent = 'Создаём аккаунт...';
+  const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name } } });
+  if (error) { showErr(errEl, translateError(error.message)); btn.disabled = false; btn.textContent = 'Создать аккаунт →'; return; }
+  // Создаём профиль
+  if (data.user) {
+    await sb.from('profiles').upsert({ id: data.user.id, name, email, created_at: new Date().toISOString() });
+  }
+}
+
+async function login() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  errEl.style.display = 'none';
+  if (!email || !pass) { showErr(errEl, 'Заполните все поля'); return; }
+  btn.disabled = true; btn.textContent = 'Входим...';
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { showErr(errEl, translateError(error.message)); btn.disabled = false; btn.textContent = 'Войти →'; }
+}
+
+async function logout() {
+  await sb.auth.signOut();
+}
+
+function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
+
+function translateError(msg) {
+  if (msg.includes('Invalid login')) return 'Неверный email или пароль';
+  if (msg.includes('already registered')) return 'Этот email уже зарегистрирован';
+  if (msg.includes('Password')) return 'Пароль слишком короткий';
+  if (msg.includes('valid email')) return 'Введите корректный email';
+  return msg;
+}
+
+// ── DASHBOARD ──
+async function enterDash() {
+  showScreen('dashScreen');
+  document.getElementById('navUserEmail').textContent = currentUser.email;
+  // Загружаем профиль
+  const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+  if (data) {
+    profile = data;
+    const name = data.name || currentUser.email.split('@')[0];
+    document.getElementById('greetName').textContent = name;
+    loadProfileIntoForm(data);
+    updateStatusCards(data);
+  }
+  // Загружаем фото
+  await loadPhotos();
+  goStep(0);
+}
+
+function loadProfileIntoForm(d) {
+  if (d.name) document.getElementById('f-name').value = d.name;
+  if (d.phone) document.getElementById('f-phone').value = d.phone;
+  if (d.city) document.getElementById('f-city').value = d.city;
+  if (d.brand) document.getElementById('f-brand').value = d.brand;
+  if (d.services) document.getElementById('f-services').value = d.services;
+  if (d.usp) document.getElementById('f-usp').value = d.usp;
+  if (d.promo) document.getElementById('f-promo').value = d.promo;
+  if (d.links) document.getElementById('f-links').value = d.links;
+  if (d.pmpkey) document.getElementById('f-pmpkey').value = d.pmpkey;
+  if (d.frequency) { freqVal = d.frequency; document.getElementById('f-freq').value = d.frequency; }
+  // Опции
+  if (d.specialization) restoreOpt('opt-spec', d.specialization, false);
+  if (d.work_format) restoreOpt('opt-work', d.work_format, false);
+  if (d.tone) restoreOpt('opt-tone', d.tone, false);
+  if (d.emoji) restoreOpt('opt-emoji', d.emoji, false);
+  if (d.post_style) restoreOpt('opt-style', d.post_style, false);
+  if (d.socials) d.socials.forEach(s => restoreOpt('opt-social', s, true));
+  if (d.frequency) {
+    document.querySelectorAll('.freq-item').forEach(i => i.classList.remove('selected'));
+    document.querySelectorAll('.freq-item').forEach(i => {
+      if (i.querySelector('.freq-num').textContent.includes(d.frequency.split(' ')[0])) i.classList.add('selected');
+    });
+  }
+}
+
+function restoreOpt(groupId, val, isCheck) {
+  document.querySelectorAll('#' + groupId + ' .opt').forEach(o => {
+    if (isCheck) { if (o.dataset.val === val) o.classList.add('selected'); }
+    else { if (o.dataset.val === val) o.classList.add('selected'); }
+  });
+}
+
+function updateStatusCards(d) {
+  const hasProfile = d.name && d.city && d.services;
+  const hasPhotos = uploadedPhotos.length >= 1;
+  const hasSocial = d.socials && d.socials.length > 0;
+
+  const dot1 = document.getElementById('dot-profile');
+  const dot2 = document.getElementById('dot-photos');
+  const dot3 = document.getElementById('dot-social');
+
+  if (hasProfile) { dot1.className = 'status-dot green'; document.querySelector('#statusCards .status-card:nth-child(1) .status-title').textContent = 'Анкета заполнена ✓'; }
+  if (hasPhotos) { dot2.className = 'status-dot green'; document.querySelector('#statusCards .status-card:nth-child(2) .status-title').textContent = `Фото загружены (${uploadedPhotos.length}) ✓`; }
+  if (hasSocial) { dot3.className = 'status-dot green'; document.querySelector('#statusCards .status-card:nth-child(3) .status-title').textContent = 'Соцсети: ' + d.socials.join(', ') + ' ✓'; }
+}
+
+// ── NAVIGATION ──
+function goStep(n) {
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.prog-step').forEach(p => p.classList.remove('active'));
+  document.getElementById('step' + n).classList.add('active');
+  document.getElementById('prog' + n).classList.add('active');
+  currentStep = n;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── OPTIONS ──
+function pickOpt(el, groupId, isCheck) {
+  if (isCheck) { el.classList.toggle('selected'); }
+  else { document.querySelectorAll('#' + groupId + ' .opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
+}
+function getOptVal(groupId) { const s = document.querySelector('#' + groupId + ' .opt.selected'); return s ? s.dataset.val : ''; }
+function getOptVals(groupId) { return [...document.querySelectorAll('#' + groupId + ' .opt.selected')].map(o => o.dataset.val); }
+function pickFreq(el, val) { document.querySelectorAll('.freq-item').forEach(i => i.classList.remove('selected')); el.classList.add('selected'); freqVal = val; document.getElementById('f-freq').value = val; }
+
+// ── SAVE STEPS ──
+async function saveStep1() {
+  const d = { name: document.getElementById('f-name').value.trim(), phone: document.getElementById('f-phone').value.trim(), specialization: getOptVal('opt-spec'), city: document.getElementById('f-city').value.trim(), work_format: getOptVal('opt-work') };
+  if (!d.name || !d.city) { alert('Заполните имя и город'); return; }
+  await saveProfile(d);
+  document.getElementById('greetName').textContent = d.name;
+  showSave('save1');
+  setTimeout(() => goStep(2), 800);
+}
+async function saveStep2() {
+  const d = { brand: document.getElementById('f-brand').value.trim(), services: document.getElementById('f-services').value.trim(), usp: document.getElementById('f-usp').value.trim(), promo: document.getElementById('f-promo').value.trim() };
+  if (!d.services) { alert('Укажите услуги и цены'); return; }
+  await saveProfile(d);
+  showSave('save2');
+  setTimeout(() => goStep(3), 800);
+}
+async function saveStep3() {
+  const d = { tone: getOptVal('opt-tone'), emoji: getOptVal('opt-emoji'), post_style: getOptVal('opt-style') };
+  if (!d.tone) { alert('Выберите стиль общения'); return; }
+  await saveProfile(d);
+  showSave('save3');
+  setTimeout(() => goStep(4), 800);
+}
+async function saveStep4() {
+  const d = { socials: getOptVals('opt-social'), links: document.getElementById('f-links').value.trim(), frequency: freqVal, pmpkey: document.getElementById('f-pmpkey').value.trim() };
+  if (!d.socials.length) { alert('Выберите хотя бы одну соцсеть'); return; }
+  await saveProfile(d);
+  showSave('save4');
+  setTimeout(() => goStep(5), 800);
+}
+async function finish() {
+  await loadPhotos();
+  updateStatusCards(profile);
+  showSave('save5');
+  setTimeout(() => goStep(0), 800);
+}
+
+async function saveProfile(data) {
+  profile = { ...profile, ...data };
+  const { error } = await sb.from('profiles').upsert({ id: currentUser.id, ...profile, updated_at: new Date().toISOString() });
+  if (error) console.error('Save error:', error);
+}
+
+function showSave(id) {
+  const el = document.getElementById(id);
+  el.classList.add('visible');
+  setTimeout(() => el.classList.remove('visible'), 2000);
+}
+
+// ── PHOTOS ──
+async function handleFiles(files) {
+  const grid = document.getElementById('photoGrid');
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) continue;
+    if (file.size > 10 * 1024 * 1024) { alert(`${file.name} слишком большой (максимум 10 МБ)`); continue; }
+
+    // Превью
+    const reader = new FileReader();
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.innerHTML = `<div class="thumb-status">загрузка...</div>`;
+    grid.appendChild(thumb);
+
+    reader.onload = e => {
+      thumb.innerHTML = `<img src="${e.target.result}"><div class="thumb-status">загрузка...</div>`;
+    };
+    reader.readAsDataURL(file);
+
+    // Загрузка в Supabase Storage
+    const path = `${currentUser.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const { data, error } = await sb.storage.from('photos').upload(path, file, { upsert: false });
+    if (error) {
+      thumb.querySelector('.thumb-status').textContent = '✗ ошибка';
+      console.error(error);
+    } else {
+      thumb.querySelector('.thumb-status').className = 'thumb-status ok';
+      thumb.querySelector('.thumb-status').textContent = '✓';
+      uploadedPhotos.push(path);
+      // Удаление
+      const del = document.createElement('div');
+      del.className = 'thumb-del';
+      del.textContent = '✕';
+      del.onclick = async () => { await sb.storage.from('photos').remove([path]); uploadedPhotos = uploadedPhotos.filter(p => p !== path); thumb.remove(); };
+      thumb.appendChild(del);
+    }
+  }
+  document.getElementById('photoInput').value = '';
+}
+
+async function loadPhotos() {
+  const { data } = await sb.storage.from('photos').list(currentUser.id);
+  if (data) {
+    uploadedPhotos = data.map(f => `${currentUser.id}/${f.name}`);
+    const grid = document.getElementById('photoGrid');
+    grid.innerHTML = '';
+    for (const f of data) {
+      const { data: { publicUrl } } = sb.storage.from('photos').getPublicUrl(`${currentUser.id}/${f.name}`);
+      const path = `${currentUser.id}/${f.name}`;
+      const thumb = document.createElement('div');
+      thumb.className = 'photo-thumb';
+      thumb.innerHTML = `<img src="${publicUrl}" loading="lazy"><div class="thumb-status ok">✓</div>`;
+      const del = document.createElement('div');
+      del.className = 'thumb-del'; del.textContent = '✕';
+      del.onclick = async () => { await sb.storage.from('photos').remove([path]); uploadedPhotos = uploadedPhotos.filter(p => p !== path); thumb.remove(); };
+      thumb.appendChild(del);
+      grid.appendChild(thumb);
+    }
+  }
+}
+
+// Drag & drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+</script>
+</body>
+</html>
