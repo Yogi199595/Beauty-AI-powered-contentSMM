@@ -631,15 +631,14 @@ async function register() {
     });
   } catch(e) {}
   // Показываем экран "проверьте почту"
-  document.getElementById('authBox').innerHTML = \`
-    <div style="text-align:center;padding:20px 0;">
-      <div style="font-family:var(--font-display);font-size:64px;color:var(--accent);line-height:1;margin-bottom:24px;">✦</div>
-      <h2 style="font-family:var(--font-display);font-size:32px;font-weight:300;color:var(--cream);margin-bottom:16px;">Проверьте <em style='font-style:italic;color:var(--accent);'>почту</em></h2>
-      <p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin-bottom:8px;">Мы отправили письмо на <strong style='color:var(--cream);'>\${email}</strong></p>
-      <p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin-bottom:32px;">Перейдите по ссылке в письме — и вы окажетесь в личном кабинете.</p>
-      <p style="font-size:12px;color:rgba(250,247,242,0.3);">Письмо не пришло? Проверьте папку «Спам»</p>
-    </div>
-  \`;
+    const authBox = document.getElementById('authBox');
+  authBox.innerHTML = '<div style="text-align:center;padding:20px 0;">'
+    + '<div style="font-family:var(--font-display);font-size:64px;color:var(--accent);line-height:1;margin-bottom:24px;">&#10022;</div>'
+    + '<h2 style="font-family:var(--font-display);font-size:32px;font-weight:300;color:var(--cream);margin-bottom:16px;">&#1055;&#1088;&#1086;&#1074;&#1077;&#1088;&#1100;&#1090;&#1077; <em style="font-style:italic;color:var(--accent);">&#1087;&#1086;&#1095;&#1090;&#1091;</em></h2>'
+    + '<p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin-bottom:8px;">&#1052;&#1099; &#1086;&#1090;&#1087;&#1088;&#1072;&#1074;&#1080;&#1083;&#1080; &#1087;&#1080;&#1089;&#1100;&#1084;&#1086; &#1085;&#1072; <strong style="color:var(--cream);">' + email + '</strong></p>'
+    + '<p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin-bottom:32px;">&#1055;&#1077;&#1088;&#1077;&#1081;&#1076;&#1080;&#1090;&#1077; &#1087;&#1086; &#1089;&#1089;&#1099;&#1083;&#1082;&#1077; &#1074; &#1087;&#1080;&#1089;&#1100;&#1084;&#1077; &#8212; &#1080; &#1074;&#1099; &#1086;&#1082;&#1072;&#1078;&#1077;&#1090;&#1077;&#1089;&#1100; &#1074; &#1083;&#1080;&#1095;&#1085;&#1086;&#1084; &#1082;&#1072;&#1073;&#1080;&#1085;&#1077;&#1090;&#1077;.</p>'
+    + '<p style="font-size:12px;color:rgba(250,247,242,0.3);">&#1055;&#1080;&#1089;&#1100;&#1084;&#1086; &#1085;&#1077; &#1087;&#1088;&#1080;&#1096;&#1083;&#1086;? &#1055;&#1088;&#1086;&#1074;&#1077;&#1088;&#1100;&#1090;&#1077; &#1087;&#1072;&#1087;&#1082;&#1091; &#171;&#1057;&#1087;&#1072;&#1084;&#187;</p>'
+    + '</div>';
 }
 
 async function login() {
