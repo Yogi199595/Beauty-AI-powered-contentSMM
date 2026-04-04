@@ -889,7 +889,22 @@
           await sb.from('masters').insert({ user_id: data.user.id, name: name || email.split('@')[0] });
           await sb.from('settings').insert({ master_id: (await getMaster(data.user.id))?.id });
         }
-        succEl.textContent = 'Аккаунт создан! Проверьте email для подтверждения, затем войдите.';
+        document.getElementById('authForm').style.display = 'none';
+        document.querySelector('.auth-tabs').style.display = 'none';
+        succEl.innerHTML = `
+          <div style="text-align:center;padding:16px 0;">
+            <div style="font-size:40px;margin-bottom:20px;">✉️</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;margin-bottom:12px;color:#1A1612;">
+              Проверьте почту
+            </div>
+            <div style="font-size:14px;color:#8C7E76;line-height:1.7;margin-bottom:24px;">
+              Мы отправили письмо на<br>
+              <strong style="color:#1A1612;">${email}</strong><br><br>
+              Перейдите по ссылке в письме —<br>после этого вернитесь сюда и войдите.
+            </div>
+            <div style="font-size:12px;color:#C4956A;">Письмо могло попасть в папку «Спам»</div>
+          </div>
+        `;
         succEl.style.display = 'block';
       }
     } catch (err) {
