@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Posta — соцсети на автопилоте для бьюти-мастеров</title>
-  <meta name="description" content="Posta — AI-платформа которая ведёт Instagram, VK и Telegram вместо вас. Описали бизнес один раз — контент идёт сам. Первый месяц бесплатно.">
+  <meta name="description" content="Posta — ИИ-платформа которая ведёт Instagram, VK и Telegram вместо вас. Описали бизнес один раз — контент идёт сам. Первый месяц бесплатно.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -891,14 +891,17 @@
       footer { padding: 32px 24px; flex-direction: column; gap: 12px; text-align: center; }
     }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 </head>
 <body>
 
 <!-- NAV -->
 <nav>
   <a href="#" class="nav-logo">Po<span>sta</span></a>
-  <a href="#form" class="nav-cta">Попробовать бесплатно</a>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="./app.html" style="font-family:var(--font-body);font-size:13px;color:var(--muted);text-decoration:none;letter-spacing:0.04em;">Войти</a>
+    <a href="#form" class="nav-cta">Попробовать бесплатно</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -911,11 +914,11 @@
       пока вы работаете
     </h1>
     <p class="hero-subtitle">
-      Опишите бизнес один раз — AI сам генерирует и публикует контент в Instagram, VK и Telegram. Без SMM-щика, без лишних трат, без ваших вечеров.
+      Опишите бизнес один раз — ИИ сам генерирует и публикует контент в Instagram, VK и Telegram. Без SMM-щика, без лишних трат, без ваших вечеров.
     </p>
     <div class="hero-actions">
       <a href="#form" class="btn-primary">Первый месяц бесплатно</a>
-      <p class="btn-hint">Без карты. Без обязательств. Отмена в любой момент.</p>
+      <p class="btn-hint">Без обязательств. Отмена в любой момент.</p>
     </div>
   </div>
   <div class="hero-right">
@@ -944,7 +947,7 @@
             </div>
           </div>
         </div>
-        <div class="post-badge">AI опубликовал сам</div>
+        <div class="post-badge">ИИ опубликовал сам</div>
       </div>
       <div class="floating-notif">
         <div class="notif-dot"></div>
@@ -1007,7 +1010,7 @@
     </div>
     <div class="step">
       <div class="step-num">02</div>
-      <h3 class="step-title">AI изучает ваш голос</h3>
+      <h3 class="step-title">ИИ изучает ваш стиль общения</h3>
       <p class="step-text">Платформа создаёт контент-план на месяц в вашем стиле. Посты, подписи к фото, актуальные темы — всё под вашу нишу.</p>
     </div>
     <div class="step">
@@ -1033,7 +1036,7 @@
     </div>
     <div class="platforms-list">
       <div class="platform-item">
-        <div class="platform-icon ig"><i class="fa-brands fa-instagram" style="color:white;font-size:22px;"></i></div>
+        <div class="platform-icon ig"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="5.5" stroke="white" stroke-width="1.8"/><circle cx="12" cy="12" r="4.5" stroke="white" stroke-width="1.8"/><circle cx="17.5" cy="6.5" r="1.2" fill="white"/></svg></div>
         <div>
           <div class="platform-name">Instagram</div>
           <div class="platform-desc">Фото, reels, истории — без Facebook</div>
@@ -1041,7 +1044,7 @@
         <div class="platform-badge">Работает</div>
       </div>
       <div class="platform-item">
-        <div class="platform-icon vk"><i class="fa-brands fa-vk" style="color:white;font-size:22px;"></i></div>
+        <div class="platform-icon vk"><svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12.785 16.241s.288-.032.436-.194c.136-.148.131-.427.131-.427s-.018-1.304.585-1.496c.595-.189 1.359 1.26 2.169 1.815.612.416 1.076.325 1.076.325l2.162-.03s1.131-.07.595-.96c-.044-.073-.312-.658-1.608-1.862-1.356-1.259-1.174-1.056.459-3.234.997-1.328 1.395-2.139 1.271-2.486-.119-.331-.852-.244-.852-.244l-2.432.015s-.18-.025-.314.056c-.131.079-.215.262-.215.262s-.387 1.029-.903 1.905c-1.088 1.847-1.523 1.945-1.701 1.831-.414-.267-.311-1.073-.311-1.646 0-1.789.271-2.534-.528-2.726-.265-.064-.46-.107-1.137-.114-.869-.009-1.603.003-2.019.206-.277.135-.491.436-.361.453.161.021.527.099.721.363.25.341.241 1.107.241 1.107s.144 2.105-.335 2.367c-.328.179-.778-.186-1.745-1.855-.496-.858-.871-1.806-.871-1.806s-.072-.176-.201-.271c-.156-.114-.374-.15-.374-.15l-2.312.015s-.347.01-.474.161c-.112.134-.009.412-.009.412s1.81 4.235 3.861 6.371c1.88 1.955 4.014 1.826 4.014 1.826h.967z"/></svg></div>
         <div>
           <div class="platform-name">ВКонтакте</div>
           <div class="platform-desc">Посты и истории в сообщество</div>
@@ -1049,7 +1052,7 @@
         <div class="platform-badge">Работает</div>
       </div>
       <div class="platform-item">
-        <div class="platform-icon tg"><i class="fa-brands fa-telegram" style="color:white;font-size:22px;"></i></div>
+        <div class="platform-icon tg"><svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M9.417 15.181l-.397 5.584c.568 0 .814-.244 1.109-.537l2.663-2.545 5.518 4.041c1.012.564 1.725.267 1.998-.931L23.93 4.28c.321-1.496-.541-2.081-1.527-1.714L1.155 10.28c-1.449.564-1.427 1.374-.247 1.741l5.443 1.693L18.953 6.01c.598-.395 1.142-.176.694.218z"/></svg></div>
         <div>
           <div class="platform-name">Telegram</div>
           <div class="platform-desc">Канал мастера на автопилоте</div>
@@ -1057,7 +1060,7 @@
         <div class="platform-badge">Работает</div>
       </div>
       <div class="platform-item">
-        <div class="platform-icon ym"><i class="fa-solid fa-location-dot" style="color:white;font-size:22px;"></i></div>
+        <div class="platform-icon ym"><svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
         <div>
           <div class="platform-name">Яндекс Карты</div>
           <div class="platform-desc">Фото работ, ответы на отзывы</div>
@@ -1084,7 +1087,7 @@
     <ul class="price-features">
       <li>Автогенерация контент-плана на месяц</li>
       <li>Публикация в Instagram, VK и Telegram</li>
-      <li>Контент в вашем голосе и стиле</li>
+      <li>Контент в вашем стиле общения</li>
       <li>Адаптация под бьюти-нишу</li>
       <li>Поддержка и настройка при старте</li>
       <li>Отмена в любой момент</li>
@@ -1106,7 +1109,7 @@
         <input class="form-field" type="text" name="platform" placeholder="Какие соцсети ведёте сейчас? (необязательно)">
         <button class="form-submit" type="submit">Начать бесплатно →</button>
       </form>
-      <p class="form-note">Нажимая кнопку, вы соглашаетесь на обработку персональных данных</p>
+      <p class="form-note">Нажимая кнопку, вы соглашаетесь на <a href="./privacy.html" target="_blank" style="color:rgba(250,247,242,0.5);text-decoration:underline;">обработку персональных данных</a></p>
     </div>
 
     <div class="form-success" id="formSuccess">
@@ -1120,7 +1123,11 @@
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">Po<span>sta</span></div>
-  <div class="footer-note">© 2025 — Posta · AI-контент для бьюти-мастеров</div>
+  <div class="footer-note" style="line-height:1.9;text-align:right;">
+    © 2026 — Posta · ИИ-контент для бьюти-мастеров<br>
+    ИП Соболев Андрей Владимирович · ИНН 420534014211<br>
+    <a href="./privacy.html" style="color:var(--muted);font-size:11px;text-decoration:underline;">Политика конфиденциальности</a>
+  </div>
 </footer>
 
 <script>
