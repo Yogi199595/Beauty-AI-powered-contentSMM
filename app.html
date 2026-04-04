@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Posta — личный кабинет</title>
+  <title>Posta — Кабинет</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     :root {
       --cream: #FAF7F2;
       --warm-white: #FDF9F5;
@@ -19,866 +19,1174 @@
       --accent: #C4956A;
       --accent-light: #E8D5C0;
       --accent-dark: #9E7452;
-      --line: rgba(196,149,106,0.2);
-      --green: #4CAF50;
+      --rose: #D4A5A0;
+      --line: rgba(196, 149, 106, 0.2);
+      --success: #4CAF50;
+      --error: #E57373;
       --font-display: 'Cormorant Garamond', serif;
       --font-body: 'DM Sans', sans-serif;
     }
-    html { scroll-behavior: smooth; }
-    body { background: var(--cream); color: var(--ink); font-family: var(--font-body); font-weight: 300; line-height: 1.6; min-height: 100vh; }
 
-    /* ── SCREENS ── */
-    .screen { display: none; min-height: 100vh; }
-    .screen.active { display: flex; }
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--font-body);
+      font-weight: 300;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
 
     /* ── AUTH SCREEN ── */
     #authScreen {
-      flex-direction: column;
+      min-height: 100vh;
+      display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 24px;
-      background: var(--ink);
-      position: relative;
-      overflow: hidden;
+      padding: 24px;
     }
-    #authScreen::before {
-      content: '✦';
-      position: absolute;
+
+    .auth-card {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-logo {
       font-family: var(--font-display);
-      font-size: 600px;
-      color: rgba(196,149,106,0.04);
-      top: -100px; right: -100px;
-      line-height: 1;
-      pointer-events: none;
+      font-size: 32px;
+      font-weight: 400;
+      text-align: center;
+      margin-bottom: 8px;
     }
-    .auth-logo { font-family: var(--font-display); font-size: 32px; font-weight: 400; color: var(--cream); margin-bottom: 48px; letter-spacing: 0.02em; }
+
     .auth-logo span { color: var(--accent); font-style: italic; }
 
-    .auth-box { width: 100%; max-width: 400px; position: relative; z-index: 1; }
-    .auth-tabs { display: flex; margin-bottom: 32px; border-bottom: 1px solid rgba(196,149,106,0.2); }
-    .auth-tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); cursor: pointer; transition: all 0.2s; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-    .auth-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .auth-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 40px;
+      letter-spacing: 0.04em;
+    }
+
+    .auth-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 32px;
+    }
+
+    .auth-tab {
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      color: var(--ink);
+      border-bottom-color: var(--accent);
+    }
 
     .auth-form { display: flex; flex-direction: column; gap: 12px; }
-    .auth-form.hidden { display: none; }
 
-    .auth-input {
-      background: #2D2420 !important;
-      border: 1px solid rgba(250,247,242,0.15);
-      padding: 16px 20px;
+    .auth-field {
+      background: white;
+      border: 1px solid var(--line);
+      padding: 14px 18px;
       font-family: var(--font-body);
       font-size: 14px;
-      color: #FAF7F2 !important;
-      -webkit-text-fill-color: #FAF7F2 !important;
+      color: var(--ink);
       outline: none;
       transition: border-color 0.2s;
       width: 100%;
-      border-radius: 0;
-    }
-    .auth-input::placeholder { color: rgba(250,247,242,0.4) !important; }
-    .auth-input:focus { border-color: var(--accent); background: #352A24 !important; }
-    .auth-input:-webkit-autofill,
-    .auth-input:-webkit-autofill:hover,
-    .auth-input:-webkit-autofill:focus {
-      -webkit-text-fill-color: #FAF7F2 !important;
-      -webkit-box-shadow: 0 0 0px 1000px #2D2420 inset !important;
-      box-shadow: 0 0 0px 1000px #2D2420 inset !important;
-      border-color: rgba(250,247,242,0.15);
-      caret-color: #FAF7F2;
     }
 
+    .auth-field::placeholder { color: var(--muted); }
+    .auth-field:focus { border-color: var(--accent); }
+
     .auth-btn {
-      background: var(--accent);
+      background: var(--ink);
       color: var(--cream);
-      padding: 18px;
+      padding: 16px;
       border: none;
       font-family: var(--font-body);
       font-size: 13px;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       cursor: pointer;
       transition: all 0.2s;
       margin-top: 8px;
     }
+
     .auth-btn:hover { background: var(--accent-dark); }
     .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    .auth-error { font-size: 13px; color: #E57373; text-align: center; padding: 8px; display: none; }
-    .auth-note { font-size: 12px; color: rgba(250,247,242,0.3); text-align: center; margin-top: 16px; }
+    .auth-error {
+      background: rgba(229, 115, 115, 0.1);
+      border-left: 3px solid var(--error);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #c62828;
+      display: none;
+    }
 
-    /* ── DASHBOARD SCREEN ── */
-    #dashScreen { flex-direction: column; }
+    .auth-success {
+      background: rgba(76, 175, 80, 0.1);
+      border-left: 3px solid var(--success);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #2e7d32;
+      display: none;
+    }
+
+    /* ── APP SCREEN ── */
+    #appScreen { display: none; }
 
     /* NAV */
-    .dash-nav {
-      padding: 16px 40px;
+    .app-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(250, 247, 242, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--line);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+    }
+
+    .app-logo {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 400;
+    }
+
+    .app-logo span { color: var(--accent); font-style: italic; }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0;
+    }
+
+    .nav-tab {
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .nav-tab.active { color: var(--ink); border-bottom-color: var(--accent); }
+    .nav-tab:hover { color: var(--ink-soft); }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .autopilot-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px; height: 22px;
+      cursor: pointer;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-slider {
+      position: absolute; inset: 0;
+      background: var(--line);
+      border-radius: 22px;
+      transition: 0.3s;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 16px; height: 16px;
+      left: 3px; bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+    .logout-btn {
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+    /* PANELS */
+    .panel { display: none; padding: 32px; max-width: 1100px; margin: 0 auto; }
+    .panel.active { display: block; }
+
+    /* ── PANEL: ФОТО ── */
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 300;
+      margin-bottom: 8px;
+    }
+
+    .panel-title em { font-style: italic; color: var(--accent); }
+
+    .panel-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 32px;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed var(--accent-light);
+      padding: 48px 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 32px;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(196, 149, 106, 0.04);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0;
+      opacity: 0; cursor: pointer;
+      width: 100%; height: 100%;
+    }
+
+    .upload-icon { font-size: 32px; margin-bottom: 12px; }
+
+    .upload-text {
+      font-size: 14px;
+      color: var(--ink-soft);
+      margin-bottom: 4px;
+    }
+
+    .upload-hint { font-size: 12px; color: var(--muted); }
+
+    /* Photo grid */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+
+    .photo-card {
+      position: relative;
+      aspect-ratio: 1;
+      overflow: hidden;
+      background: var(--accent-light);
+    }
+
+    .photo-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-status {
+      position: absolute;
+      bottom: 8px; left: 8px;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+    }
+
+    .photo-status.pending { background: rgba(250,247,242,0.9); color: var(--ink-soft); }
+    .photo-status.processing { background: rgba(196,149,106,0.9); color: white; }
+    .photo-status.used { background: rgba(76,175,80,0.9); color: white; }
+
+    .photo-delete {
+      position: absolute;
+      top: 8px; right: 8px;
+      width: 24px; height: 24px;
+      background: rgba(26,22,18,0.7);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .photo-card:hover .photo-delete { opacity: 1; }
+
+    /* ── PANEL: ПОСТЫ ── */
+    .posts-list { display: flex; flex-direction: column; gap: 2px; }
+
+    .post-card {
+      background: white;
+      padding: 24px 28px;
+      display: grid;
+      grid-template-columns: 64px 1fr auto;
+      gap: 20px;
+      align-items: start;
+      transition: background 0.2s;
+    }
+
+    .post-card:hover { background: var(--warm-white); }
+
+    .post-thumb {
+      width: 64px; height: 64px;
+      object-fit: cover;
+      background: var(--accent-light);
+      flex-shrink: 0;
+    }
+
+    .post-meta { flex: 1; }
+
+    .post-platform-tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 12px;
+    }
+
+    .post-platform-tab {
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      cursor: pointer;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .post-platform-tab.active {
+      background: var(--ink);
+      color: var(--cream);
+      border-color: var(--ink);
+    }
+
+    .post-caption {
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+      margin-bottom: 8px;
+      white-space: pre-wrap;
+    }
+
+    .post-hashtags {
+      font-size: 12px;
+      color: var(--accent-dark);
+    }
+
+    .post-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .post-status-badge {
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+
+    .post-status-badge.draft { background: var(--accent-light); color: var(--accent-dark); }
+    .post-status-badge.published { background: rgba(76,175,80,0.15); color: #2e7d32; }
+    .post-status-badge.error { background: rgba(229,115,115,0.15); color: #c62828; }
+
+    .post-scheduled {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .btn-regenerate {
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      padding: 6px 12px;
+      border: 1px solid var(--line);
+      background: none;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-body);
+    }
+
+    .btn-regenerate:hover { border-color: var(--accent); color: var(--accent-dark); }
+
+    /* ── PANEL: НАСТРОЙКИ ── */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .settings-section {
+      background: white;
+      padding: 28px;
+    }
+
+    .settings-section-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 400;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .settings-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--line);
-      background: rgba(250,247,242,0.95);
-      backdrop-filter: blur(12px);
-      position: sticky; top: 0; z-index: 10;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(196, 149, 106, 0.08);
     }
-    .dash-logo { font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--ink); text-decoration: none; }
-    .dash-logo span { color: var(--accent); font-style: italic; }
-    .dash-nav-right { display: flex; align-items: center; gap: 20px; }
-    .dash-user { font-size: 13px; color: var(--muted); }
-    .dash-logout { font-size: 12px; color: var(--muted); cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; transition: color 0.2s; background: none; border: none; font-family: var(--font-body); }
-    .dash-logout:hover { color: var(--accent); }
 
-    /* PROGRESS BAR */
-    .onboard-progress { padding: 0 40px; background: var(--warm-white); border-bottom: 1px solid var(--line); }
-    .progress-steps { display: flex; max-width: 800px; margin: 0 auto; }
-    .prog-step { flex: 1; padding: 16px 0; text-align: center; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); position: relative; cursor: pointer; }
-    .prog-step::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--line); }
-    .prog-step.active { color: var(--accent); }
-    .prog-step.active::after { background: var(--accent); }
-    .prog-step.done { color: var(--accent-dark); }
-    .prog-step.done::after { background: var(--accent-dark); }
+    .settings-row:last-child { border-bottom: none; }
 
-    /* CONTENT */
-    .dash-content { flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding: 48px 40px 80px; }
+    .settings-label {
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
 
-    /* STEP PANELS */
-    .step-panel { display: none; }
-    .step-panel.active { display: block; }
+    .settings-value {
+      font-size: 13px;
+      color: var(--muted);
+    }
 
-    .panel-title { font-family: var(--font-display); font-size: clamp(32px,4vw,48px); font-weight: 300; margin-bottom: 8px; }
-    .panel-title em { font-style: italic; color: var(--accent); }
-    .panel-sub { font-size: 15px; color: var(--muted); margin-bottom: 40px; }
-
-    /* FIELDS */
-    .field { margin-bottom: 20px; }
-    .field-label { font-size: 13px; font-weight: 500; color: var(--ink); letter-spacing: 0.04em; margin-bottom: 8px; display: block; }
-    .field-hint { font-size: 12px; color: var(--muted); margin-bottom: 8px; display: block; }
-    .field-req { color: var(--accent); }
-
-    input[type="text"], input[type="tel"], input[type="email"], textarea, select {
-      width: 100%;
-      background: var(--warm-white);
+    .settings-input {
+      background: var(--cream);
       border: 1px solid var(--line);
-      padding: 14px 18px;
+      padding: 8px 12px;
       font-family: var(--font-body);
-      font-size: 14px;
-      font-weight: 300;
+      font-size: 13px;
       color: var(--ink);
       outline: none;
+      width: 180px;
       transition: border-color 0.2s;
-      appearance: none;
     }
-    input:focus, textarea:focus, select:focus { border-color: var(--accent); background: #fff; }
-    input::placeholder, textarea::placeholder { color: var(--muted); }
-    textarea { resize: vertical; min-height: 90px; }
 
-    /* OPTIONS */
-    .options { display: flex; flex-direction: column; gap: 2px; }
-    .options.row { flex-direction: row; flex-wrap: wrap; gap: 8px; }
-    .opt { display: flex; align-items: center; gap: 12px; padding: 13px 18px; background: var(--warm-white); border: 1px solid var(--line); cursor: pointer; transition: all 0.2s; user-select: none; }
-    .opt:hover { border-color: var(--accent); }
-    .opt.selected { border-color: var(--accent); background: rgba(196,149,106,0.06); }
-    .opt-dot { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--accent-light); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .opt.selected .opt-dot { background: var(--accent); border-color: var(--accent); }
-    .opt.selected .opt-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; }
-    .opt-check { width: 16px; height: 16px; border: 1.5px solid var(--accent-light); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .opt.selected .opt-check { background: var(--accent); border-color: var(--accent); }
-    .opt.selected .opt-check::after { content: '✓'; color: white; font-size: 11px; }
-    .opt-text { font-size: 14px; color: var(--ink-soft); }
+    .settings-input:focus { border-color: var(--accent); }
 
-    /* FREQ */
-    .freq-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
-    .freq-item { padding: 16px 12px; background: var(--warm-white); border: 1px solid var(--line); text-align: center; cursor: pointer; transition: all 0.2s; }
-    .freq-item:hover, .freq-item.selected { border-color: var(--accent); background: rgba(196,149,106,0.06); }
-    .freq-num { font-family: var(--font-display); font-size: 32px; font-weight: 300; color: var(--accent); line-height: 1; }
-    .freq-label { font-size: 11px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
-
-    /* UPLOAD */
-    .upload-zone { border: 1.5px dashed var(--accent-light); padding: 48px 24px; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--warm-white); position: relative; }
-    .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(196,149,106,0.04); }
-    .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-    .upload-icon { font-size: 36px; opacity: 0.3; margin-bottom: 12px; }
-    .upload-title { font-size: 15px; color: var(--ink-soft); margin-bottom: 6px; }
-    .upload-hint { font-size: 12px; color: var(--muted); }
-
-    .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px,1fr)); gap: 8px; margin-top: 16px; }
-    .photo-thumb { aspect-ratio: 1; border-radius: 4px; overflow: hidden; position: relative; background: var(--accent-light); }
-    .photo-thumb img { width: 100%; height: 100%; object-fit: cover; }
-    .photo-thumb .thumb-del { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; background: rgba(0,0,0,0.6); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; color: white; }
-    .photo-thumb .thumb-status { position: absolute; bottom: 4px; left: 4px; font-size: 9px; padding: 2px 6px; border-radius: 10px; background: rgba(0,0,0,0.6); color: white; }
-    .photo-thumb .thumb-status.ok { background: rgba(76,175,80,0.85); }
-
-    /* BUTTONS */
-    .btn-primary {
-      background: var(--ink); color: var(--cream);
-      padding: 18px 40px; border: none;
-      font-family: var(--font-body); font-size: 13px;
-      letter-spacing: 0.1em; text-transform: uppercase;
-      cursor: pointer; transition: all 0.2s; display: inline-block;
+    .settings-select {
+      background: var(--cream);
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      cursor: pointer;
     }
-    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-    .btn-secondary { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 18px 32px; font-family: var(--font-body); font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-    .btn-row { display: flex; gap: 12px; margin-top: 40px; align-items: center; flex-wrap: wrap; }
+    .settings-textarea {
+      background: var(--cream);
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      font-family: var(--font-body);
+      font-size: 13px;
+      color: var(--ink);
+      outline: none;
+      width: 100%;
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.5;
+      margin-top: 8px;
+      transition: border-color 0.2s;
+    }
 
-    /* STATUS CARD */
-    .status-card { padding: 24px 28px; border: 1px solid var(--line); background: var(--warm-white); margin-bottom: 16px; display: flex; align-items: center; gap: 16px; }
-    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-    .status-dot.green { background: var(--green); box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
-    .status-dot.amber { background: var(--accent); box-shadow: 0 0 0 3px rgba(196,149,106,0.15); }
-    .status-dot.gray { background: var(--muted); }
-    .status-text { flex: 1; }
-    .status-title { font-size: 14px; font-weight: 500; color: var(--ink); }
-    .status-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .settings-textarea:focus { border-color: var(--accent); }
 
-    /* DASHBOARD HOME */
-    .dash-greeting { font-family: var(--font-display); font-size: clamp(28px,3.5vw,42px); font-weight: 300; margin-bottom: 8px; }
-    .dash-greeting em { font-style: italic; color: var(--accent); }
-    .dash-greet-sub { font-size: 15px; color: var(--muted); margin-bottom: 40px; }
+    .settings-full { grid-column: 1 / -1; }
 
-    .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-bottom: 32px; }
-    .dash-tile { padding: 28px 24px; background: var(--warm-white); border: 1px solid var(--line); }
-    .dash-tile-num { font-family: var(--font-display); font-size: 48px; font-weight: 300; color: var(--accent); line-height: 1; margin-bottom: 4px; }
-    .dash-tile-label { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+    .btn-save {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 12px 28px;
+      border: none;
+      font-family: var(--font-body);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 24px;
+    }
 
-    .action-btn { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; background: var(--warm-white); border: 1px solid var(--line); cursor: pointer; transition: all 0.2s; margin-bottom: 2px; text-decoration: none; color: var(--ink); }
-    .action-btn:hover { border-color: var(--accent); background: rgba(196,149,106,0.04); }
-    .action-btn-text { font-size: 14px; font-weight: 400; }
-    .action-btn-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .action-btn-arrow { color: var(--accent); font-size: 18px; }
+    .btn-save:hover { background: var(--accent-dark); }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* SAVE MSG */
-    .save-msg { font-size: 13px; color: var(--green); display: none; align-items: center; gap: 6px; }
-    .save-msg.visible { display: flex; }
+    /* Platform toggles */
+    .platform-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(196, 149, 106, 0.08);
+    }
 
-    /* POSTMYPOST KEY */
-    .pmp-box { background: rgba(196,149,106,0.08); border-left: 3px solid var(--accent); padding: 20px 24px; margin-top: 16px; }
-    .pmp-box p { font-size: 13px; color: var(--ink-soft); line-height: 1.6; }
-    .pmp-box a { color: var(--accent); }
+    .platform-toggle-row:last-child { border-bottom: none; }
 
-    footer { padding: 24px 40px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); text-align: center; }
+    .platform-name-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--ink-soft);
+    }
 
-    @media (max-width: 640px) {
-      .dash-nav { padding: 14px 20px; }
-      .onboard-progress { padding: 0 20px; }
-      .prog-step { font-size: 10px; padding: 12px 4px; }
-      .dash-content { padding: 32px 20px 60px; }
-      .dash-grid { grid-template-columns: 1fr; }
-      .freq-grid { grid-template-columns: 1fr; }
-      .btn-row { flex-direction: column; }
-      .btn-primary, .btn-secondary { width: 100%; text-align: center; }
-      footer { padding: 20px; }
+    .platform-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+    }
+
+    .dot-ig { background: #e6683c; }
+    .dot-vk { background: #4680C2; }
+    .dot-tg { background: #26A5E4; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 32px; right: 32px;
+      background: var(--ink);
+      color: var(--cream);
+      padding: 14px 20px;
+      font-size: 13px;
+      border-radius: 4px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 999;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-left: 3px solid var(--success); }
+    .toast.error { border-left: 3px solid var(--error); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 80px 32px;
+      color: var(--muted);
+    }
+
+    .empty-icon { font-size: 40px; margin-bottom: 16px; }
+    .empty-text { font-size: 14px; }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 768px) {
+      .app-nav { padding: 0 16px; }
+      .nav-tabs { display: none; }
+      .panel { padding: 20px 16px; }
+      .settings-grid { grid-template-columns: 1fr; }
+      .post-card { grid-template-columns: 48px 1fr; }
+      .post-actions { display: none; }
     }
   </style>
 </head>
 <body>
 
-<!-- ══ AUTH SCREEN ══ -->
-<div class="screen active" id="authScreen">
-  <div class="auth-box" id="authBox">
-    <div class="auth-logo" style="text-align:center;">Po<span>sta</span></div>
+<!-- AUTH SCREEN -->
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-logo">Po<span>sta</span></div>
+    <div class="auth-sub">Личный кабинет мастера</div>
 
     <div class="auth-tabs">
-      <div class="auth-tab active" id="tabReg" onclick="switchTab('reg')">Регистрация</div>
-      <div class="auth-tab" id="tabLogin" onclick="switchTab('login')">Войти</div>
+      <div class="auth-tab active" data-tab="login">Войти</div>
+      <div class="auth-tab" data-tab="register">Регистрация</div>
     </div>
 
-    <!-- РЕГИСТРАЦИЯ -->
-    <div class="auth-form" id="formReg">
-      <input class="auth-input" type="text" id="regName" placeholder="Ваше имя" autocomplete="name">
-      <input class="auth-input" type="email" id="regEmail" placeholder="Email" autocomplete="email">
-      <input class="auth-input" type="password" id="regPass" placeholder="Пароль (минимум 6 символов)" autocomplete="new-password">
-      <div class="auth-error" id="regError"></div>
-      <button class="auth-btn" id="regBtn" onclick="register()">Создать аккаунт →</button>
-      <p class="auth-note">Первый месяц бесплатно </p>
-    </div>
+    <div id="authError" class="auth-error"></div>
+    <div id="authSuccess" class="auth-success"></div>
 
-    <!-- ВХОД -->
-    <div class="auth-form hidden" id="formLogin">
-      <input class="auth-input" type="email" id="loginEmail" placeholder="Email" autocomplete="email">
-      <input class="auth-input" type="password" id="loginPass" placeholder="Пароль" autocomplete="current-password">
-      <div class="auth-error" id="loginError"></div>
-      <button class="auth-btn" id="loginBtn" onclick="login()">Войти →</button>
-    </div>
+    <form class="auth-form" id="authForm">
+      <input class="auth-field" type="email" id="authEmail" placeholder="Email" required>
+      <input class="auth-field" type="password" id="authPassword" placeholder="Пароль" required minlength="6">
+      <div id="authNameWrap" style="display:none;">
+        <input class="auth-field" type="text" id="authName" placeholder="Ваше имя">
+      </div>
+      <button class="auth-btn" type="submit" id="authSubmit">Войти</button>
+    </form>
   </div>
 </div>
 
-<!-- ══ DASHBOARD SCREEN ══ -->
-<div class="screen" id="dashScreen">
+<!-- APP SCREEN -->
+<div id="appScreen">
 
   <!-- NAV -->
-  <nav class="dash-nav">
-    <a href="/Beauty-AI-powered-contentSMM/" class="dash-logo">Po<span>sta</span></a>
-    <div class="dash-nav-right">
-      <span class="dash-user" id="navUserEmail"></span>
-      <button class="dash-logout" onclick="logout()">Выйти</button>
+  <nav class="app-nav">
+    <div class="app-logo">Po<span>sta</span></div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" data-panel="photos">Фото</div>
+      <div class="nav-tab" data-panel="posts">Посты</div>
+      <div class="nav-tab" data-panel="settings">Настройки</div>
+    </div>
+    <div class="nav-right">
+      <div class="autopilot-toggle">
+        <span>Автопилот</span>
+        <label class="toggle">
+          <input type="checkbox" id="autopilotToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="logout-btn" id="logoutBtn">Выйти</div>
     </div>
   </nav>
 
-  <!-- PROGRESS -->
-  <div class="onboard-progress">
-    <div class="progress-steps">
-      <div class="prog-step active" id="prog0" onclick="goStep(0)">Главная</div>
-      <div class="prog-step" id="prog1" onclick="goStep(1)">О вас</div>
-      <div class="prog-step" id="prog2" onclick="goStep(2)">Бизнес</div>
-      <div class="prog-step" id="prog3" onclick="goStep(3)">Стиль</div>
-      <div class="prog-step" id="prog4" onclick="goStep(4)">Соцсети</div>
-      <div class="prog-step" id="prog5" onclick="goStep(5)">Фото</div>
+  <!-- PANEL: ФОТО -->
+  <div class="panel active" id="panel-photos">
+    <div class="panel-title">Очередь <em>фотографий</em></div>
+    <div class="panel-sub">Загрузите фото своих работ — AI сгенерирует тексты и опубликует</div>
+
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*" multiple>
+      <div class="upload-icon">📸</div>
+      <div class="upload-text">Перетащите фото или нажмите для выбора</div>
+      <div class="upload-hint">JPG, PNG · до 10 МБ · можно несколько сразу</div>
+    </div>
+
+    <div class="photo-grid" id="photoGrid">
+      <div class="loading">Загрузка...</div>
     </div>
   </div>
 
-  <!-- CONTENT -->
-  <div class="dash-content">
+  <!-- PANEL: ПОСТЫ -->
+  <div class="panel" id="panel-posts">
+    <div class="panel-title">Очередь <em>постов</em></div>
+    <div class="panel-sub">Сгенерированные тексты для каждой платформы</div>
+    <div class="posts-list" id="postsList">
+      <div class="loading">Загрузка...</div>
+    </div>
+  </div>
 
-    <!-- STEP 0: ГЛАВНАЯ -->
-    <div class="step-panel active" id="step0">
-      <div class="dash-greeting">Привет, <em id="greetName">мастер</em> 👋</div>
-      <p class="dash-greet-sub">Настройте автопилот — займёт 10 минут. Дальше соцсети работают сами.</p>
+  <!-- PANEL: НАСТРОЙКИ -->
+  <div class="panel" id="panel-settings">
+    <div class="panel-title">Настройки <em>профиля</em></div>
+    <div class="panel-sub">Данные о вашем бизнесе — AI использует их для генерации контента</div>
 
-      <div id="statusCards">
-        <div class="status-card">
-          <div class="status-dot gray" id="dot-profile"></div>
-          <div class="status-text">
-            <div class="status-title">Анкета не заполнена</div>
-            <div class="status-sub" id="sub-profile">Расскажите о себе и своём бизнесе</div>
+    <div class="settings-grid">
+
+      <!-- Основное -->
+      <div class="settings-section">
+        <div class="settings-section-title">О мастере</div>
+        <div class="settings-row">
+          <div class="settings-label">Имя</div>
+          <input class="settings-input" type="text" id="s_name" placeholder="Анна">
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Город</div>
+          <input class="settings-input" type="text" id="s_city" placeholder="Москва">
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Ниша</div>
+          <select class="settings-select" id="s_niche">
+            <option value="">Выберите</option>
+            <option value="ногти">Ногти</option>
+            <option value="брови">Брови</option>
+            <option value="ресницы">Ресницы</option>
+            <option value="волосы">Волосы</option>
+            <option value="другое">Другое</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Ссылка для записи</div>
+          <input class="settings-input" type="url" id="s_booking_link" placeholder="wa.me/...">
+        </div>
+      </div>
+
+      <!-- Платформы -->
+      <div class="settings-section">
+        <div class="settings-section-title">Платформы</div>
+        <div class="platform-toggle-row">
+          <div class="platform-name-row">
+            <div class="platform-dot dot-ig"></div>
+            Instagram
           </div>
-          <button class="btn-primary" style="padding:12px 24px;font-size:12px;" onclick="goStep(1)">Заполнить</button>
+          <label class="toggle">
+            <input type="checkbox" id="p_instagram" checked>
+            <span class="toggle-slider"></span>
+          </label>
         </div>
-        <div class="status-card">
-          <div class="status-dot gray" id="dot-photos"></div>
-          <div class="status-text">
-            <div class="status-title">Фото не загружены</div>
-            <div class="status-sub" id="sub-photos">Нужно минимум 5 фото ваших работ</div>
+        <div class="platform-toggle-row">
+          <div class="platform-name-row">
+            <div class="platform-dot dot-vk"></div>
+            ВКонтакте
           </div>
-          <button class="btn-secondary" style="padding:12px 24px;font-size:12px;" onclick="goStep(5)">Загрузить</button>
+          <label class="toggle">
+            <input type="checkbox" id="p_vk" checked>
+            <span class="toggle-slider"></span>
+          </label>
         </div>
-        <div class="status-card">
-          <div class="status-dot gray" id="dot-social"></div>
-          <div class="status-text">
-            <div class="status-title">Соцсети не подключены</div>
-            <div class="status-sub">Укажите какие платформы публикуем</div>
+        <div class="platform-toggle-row">
+          <div class="platform-name-row">
+            <div class="platform-dot dot-tg"></div>
+            Telegram
           </div>
-          <button class="btn-secondary" style="padding:12px 24px;font-size:12px;" onclick="goStep(4)">Настроить</button>
+          <label class="toggle">
+            <input type="checkbox" id="p_telegram" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <div class="settings-row" style="margin-top:16px;">
+          <div class="settings-label">Постов в неделю</div>
+          <select class="settings-select" id="s_posts_per_week">
+            <option value="2">2</option>
+            <option value="3" selected>3</option>
+            <option value="5">5</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <div class="settings-row">
+          <div class="settings-label">Проверять перед публикацией</div>
+          <label class="toggle">
+            <input type="checkbox" id="s_review">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
       </div>
 
-      <div style="margin-top:32px;">
-        <div class="action-btn" onclick="goStep(1)">
-          <div><div class="action-btn-text">Заполнить анкету</div><div class="action-btn-sub">О вас, бизнесе и стиле постов</div></div>
-          <div class="action-btn-arrow">→</div>
+      <!-- Услуги -->
+      <div class="settings-section settings-full">
+        <div class="settings-section-title">Для генерации контента</div>
+        <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
+          <div class="settings-label">Услуги и цены</div>
+          <textarea class="settings-textarea" id="s_services" placeholder="Маникюр от 2500 руб, педикюр от 3000 руб, покрытие гель-лак..."></textarea>
         </div>
-        <a class="action-btn" href="/Beauty-AI-powered-contentSMM/photo-guide.html" target="_blank">
-          <div><div class="action-btn-text">Как снять хорошее фото</div><div class="action-btn-sub">Инструкция — 5 минут</div></div>
-          <div class="action-btn-arrow">↗</div>
-        </a>
+        <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
+          <div class="settings-label">Стиль общения</div>
+          <textarea class="settings-textarea" id="s_style_notes" placeholder="Пишу просто и по-человечески, без пафоса. Люблю юмор. Обращаюсь на «ты»..."></textarea>
+        </div>
+        <div class="settings-row" style="flex-direction: column; align-items: flex-start;">
+          <div class="settings-label">Текущие акции</div>
+          <textarea class="settings-textarea" id="s_promo" placeholder="В апреле скидка 10% на первое посещение..."></textarea>
+        </div>
       </div>
+
     </div>
 
-    <!-- STEP 1: О ВАС -->
-    <div class="step-panel" id="step1">
-      <h2 class="panel-title">О <em>вас</em></h2>
-      <p class="panel-sub">Базовая информация — на её основе AI подберёт геотеги и хэштеги</p>
+    <button class="btn-save" id="saveSettingsBtn">Сохранить настройки</button>
+  </div>
 
-      <div class="field">
-        <label class="field-label">Имя <span class="field-req">*</span></label>
-        <input type="text" id="f-name" placeholder="Анна">
-      </div>
+</div>
 
-      <div class="field">
-        <label class="field-label">Специализация <span class="field-req">*</span></label>
-        <div class="options" id="opt-spec">
-          <div class="opt" data-val="Ногтевой сервис" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Ногтевой сервис</span></div>
-          <div class="opt" data-val="Брови / ресницы" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Брови / ресницы</span></div>
-          <div class="opt" data-val="Волосы" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Волосы</span></div>
-          <div class="opt" data-val="Массаж" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Массаж</span></div>
-          <div class="opt" data-val="Другое" onclick="pickOpt(this,'opt-spec',false)"><div class="opt-dot"></div><span class="opt-text">Другое</span></div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label">Город и район <span class="field-req">*</span></label>
-        <span class="field-hint">Для геотегов — например: Москва, Митино</span>
-        <input type="text" id="f-city" placeholder="Москва, Митино">
-      </div>
-      <div class="field">
-        <label class="field-label">Формат работы</label>
-        <div class="options" id="opt-work">
-          <div class="opt" data-val="Дома у себя" onclick="pickOpt(this,'opt-work',false)"><div class="opt-dot"></div><span class="opt-text">Дома у себя</span></div>
-          <div class="opt" data-val="Кабинет в аренде" onclick="pickOpt(this,'opt-work',false)"><div class="opt-dot"></div><span class="opt-text">Кабинет в аренде</span></div>
-          <div class="opt" data-val="Выезд к клиенту" onclick="pickOpt(this,'opt-work',false)"><div class="opt-dot"></div><span class="opt-text">Выезд к клиенту</span></div>
-          <div class="opt" data-val="Салон" onclick="pickOpt(this,'opt-work',false)"><div class="opt-dot"></div><span class="opt-text">Салон</span></div>
-        </div>
-      </div>
-      <div class="btn-row">
-        <button class="btn-primary" onclick="saveStep1()">Сохранить и продолжить →</button>
-        <div class="save-msg" id="save1"><span>✓</span> Сохранено</div>
-      </div>
-    </div>
-
-    <!-- STEP 2: БИЗНЕС -->
-    <div class="step-panel" id="step2">
-      <h2 class="panel-title">Про <em>бизнес</em></h2>
-      <p class="panel-sub">AI будет использовать эти данные при генерации постов</p>
-
-      <div class="field">
-        <label class="field-label">Название бренда или аккаунта</label>
-        <input type="text" id="f-brand" placeholder="@nail_anna или Студия Анны">
-      </div>
-      <div class="field">
-        <label class="field-label">Услуги и цены <span class="field-req">*</span></label>
-        <span class="field-hint">Что делаете и сколько стоит</span>
-        <textarea id="f-services" placeholder="Маникюр — 2000₽&#10;Педикюр — 2500₽&#10;Гель-лак — 500₽"></textarea>
-      </div>
-      <div class="field">
-        <label class="field-label">Чем отличаетесь?</label>
-        <textarea id="f-usp" placeholder="Опыт 6 лет, работаю только с безвредными материалами..."></textarea>
-      </div>
-      <div class="field">
-        <label class="field-label">Акции или спецпредложения</label>
-        <input type="text" id="f-promo" placeholder="Скидка 20% на первый визит / Нет">
-      </div>
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="goStep(1)">← Назад</button>
-        <button class="btn-primary" onclick="saveStep2()">Сохранить и продолжить →</button>
-        <div class="save-msg" id="save2"><span>✓</span> Сохранено</div>
-      </div>
-    </div>
-
-    <!-- STEP 3: СТИЛЬ -->
-    <div class="step-panel" id="step3">
-      <h2 class="panel-title">Ваш <em>стиль</em></h2>
-      <p class="panel-sub">Настроим tone of voice — AI будет писать как вы</p>
-
-      <div class="field">
-        <label class="field-label">Как общаетесь с клиентами? <span class="field-req">*</span></label>
-        <div class="options" id="opt-tone">
-          <div class="opt" data-val="По-дружески, на ты" onclick="pickOpt(this,'opt-tone',false)"><div class="opt-dot"></div><span class="opt-text">По-дружески, на «ты»</span></div>
-          <div class="opt" data-val="Профессионально, на вы" onclick="pickOpt(this,'opt-tone',false)"><div class="opt-dot"></div><span class="opt-text">Профессионально, на «вы»</span></div>
-          <div class="opt" data-val="Смешанно" onclick="pickOpt(this,'opt-tone',false)"><div class="opt-dot"></div><span class="opt-text">Смешанно</span></div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label">Эмодзи в постах?</label>
-        <div class="options row" id="opt-emoji">
-          <div class="opt" data-val="Да, активно" onclick="pickOpt(this,'opt-emoji',false)" style="flex:1;min-width:120px;"><div class="opt-dot"></div><span class="opt-text">Да 🌸</span></div>
-          <div class="opt" data-val="Немного" onclick="pickOpt(this,'opt-emoji',false)" style="flex:1;min-width:120px;"><div class="opt-dot"></div><span class="opt-text">Немного ✨</span></div>
-          <div class="opt" data-val="Без эмодзи" onclick="pickOpt(this,'opt-emoji',false)" style="flex:1;min-width:120px;"><div class="opt-dot"></div><span class="opt-text">Без</span></div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label">Тон постов</label>
-        <div class="options" id="opt-style">
-          <div class="opt" data-val="Душевно и тепло" onclick="pickOpt(this,'opt-style',false)"><div class="opt-dot"></div><span class="opt-text">Душевно и тепло — как подруга</span></div>
-          <div class="opt" data-val="Коротко и по делу" onclick="pickOpt(this,'opt-style',false)"><div class="opt-dot"></div><span class="opt-text">Коротко и по делу</span></div>
-          <div class="opt" data-val="Экспертно" onclick="pickOpt(this,'opt-style',false)"><div class="opt-dot"></div><span class="opt-text">Экспертно и профессионально</span></div>
-        </div>
-      </div>
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="goStep(2)">← Назад</button>
-        <button class="btn-primary" onclick="saveStep3()">Сохранить и продолжить →</button>
-        <div class="save-msg" id="save3"><span>✓</span> Сохранено</div>
-      </div>
-    </div>
-
-    <!-- STEP 4: СОЦСЕТИ -->
-    <div class="step-panel" id="step4">
-      <h2 class="panel-title">Соц<em>сети</em></h2>
-      <p class="panel-sub">Куда публикуем и как часто</p>
-
-      <div class="field">
-        <label class="field-label">Платформы <span class="field-req">*</span></label>
-        <div class="options" id="opt-social">
-          <div class="opt" data-val="Instagram" onclick="pickOpt(this,'opt-social',true)"><div class="opt-check"></div><span class="opt-text">Instagram</span></div>
-          <div class="opt" data-val="ВКонтакте" onclick="pickOpt(this,'opt-social',true)"><div class="opt-check"></div><span class="opt-text">ВКонтакте</span></div>
-          <div class="opt" data-val="Telegram" onclick="pickOpt(this,'opt-social',true)"><div class="opt-check"></div><span class="opt-text">Telegram</span></div>
-        </div>
-      </div>
-      <div class="field">
-        <label class="field-label">Ссылки на аккаунты</label>
-        <textarea id="f-links" placeholder="instagram.com/nail_anna&#10;vk.com/nail_anna" style="min-height:70px;"></textarea>
-      </div>
-      <div class="field">
-        <label class="field-label">Частота публикаций</label>
-        <div class="freq-grid" id="freqGrid">
-          <div class="freq-item" onclick="pickFreq(this,'7 постов в неделю')"><div class="freq-num">7</div><div class="freq-label">в неделю</div></div>
-          <div class="freq-item selected" onclick="pickFreq(this,'3-4 поста в неделю')"><div class="freq-num">3–4</div><div class="freq-label">в неделю</div></div>
-          <div class="freq-item" onclick="pickFreq(this,'2-3 поста в неделю')"><div class="freq-num">2–3</div><div class="freq-label">в неделю</div></div>
-        </div>
-        <input type="hidden" id="f-freq" value="3-4 поста в неделю">
-      </div>
-
-      <div class="pmp-box">
-        <p><strong style="color:var(--accent-dark);">Подключение Postmypost</strong><br>
-        Для автопубликации нужен API ключ вашего аккаунта на <a href="https://postmypost.io" target="_blank">postmypost.io</a>. Зарегистрируйтесь там, подключите свои соцсети, затем вставьте API ключ ниже.</p>
-      </div>
-      <div class="field" style="margin-top:12px;">
-        <label class="field-label">API ключ Postmypost</label>
-        <input type="text" id="f-pmpkey" placeholder="pmp_xxxxxxxxxxxxxxxx">
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="goStep(3)">← Назад</button>
-        <button class="btn-primary" onclick="saveStep4()">Сохранить и продолжить →</button>
-        <div class="save-msg" id="save4"><span>✓</span> Сохранено</div>
-      </div>
-    </div>
-
-    <!-- STEP 5: ФОТО -->
-    <div class="step-panel" id="step5">
-      <h2 class="panel-title">Фото <em>работ</em></h2>
-      <p class="panel-sub">Загрузите 5–10 лучших работ — AI будет использовать их для постов</p>
-
-      <div class="upload-zone" id="uploadZone">
-        <input type="file" id="photoInput" multiple accept="image/*" onchange="handleFiles(this.files)">
-        <div class="upload-icon">✦</div>
-        <div class="upload-title">Нажмите или перетащите фото сюда</div>
-        <div class="upload-hint">JPG, PNG · до 10 МБ · минимум 5 фото</div>
-      </div>
-
-      <div class="photo-grid" id="photoGrid"></div>
-
-      <div style="margin-top:16px;">
-        <a href="/Beauty-AI-powered-contentSMM/photo-guide.html" target="_blank" style="font-size:13px;color:var(--accent);text-decoration:underline;">Как снять хорошее фото →</a>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="goStep(4)">← Назад</button>
-        <button class="btn-primary" id="finishBtn" onclick="finish()">Готово — запустить автопилот →</button>
-        <div class="save-msg" id="save5"><span>✓</span> Фото сохранены</div>
-      </div>
-    </div>
-
-  </div><!-- /dash-content -->
-
-  <footer>© 2026 — Posta · ИП Соболев Андрей Владимирович · ИНН 420534014211</footer>
-</div><!-- /dashScreen -->
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script>
-const SUPA_URL = 'https://pluvtxjkkgvsqamgboux.supabase.co';
-const SUPA_KEY = 'sb_publishable_WH6zffTWifKp8CZngkDw5w_Rw_IyZcg';
-const { createClient } = supabase;
-const sb = createClient(SUPA_URL, SUPA_KEY);
+  // ─── SUPABASE INIT ───
+  const { createClient } = supabase;
+  const sb = createClient(
+    'https://pluvtxjkkgvsqamgboux.supabase.co',
+    'sb_publishable_WH6zffTWifKp8CZngkDw5w_Rw_IyZcg'
+  );
 
-let currentUser = null;
-let profile = {};
-let currentStep = 0;
-let uploadedPhotos = [];
-let freqVal = '3-4 поста в неделю';
+  let currentUser = null;
+  let currentMaster = null;
 
-// ── INIT ──
-window.addEventListener('DOMContentLoaded', async () => {
-  // Обрабатываем токен из URL после подтверждения email
-  const hash = window.location.hash;
-  if (hash && hash.includes('access_token')) {
-    const params = new URLSearchParams(hash.replace('#', ''));
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-    if (accessToken) {
-      await sb.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
-      window.location.hash = '';
-    }
+  // ─── TOAST ───
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    currentUser = session.user;
-    await enterDash();
-  }
-  sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
-      currentUser = session.user;
-      await enterDash();
-    } else if (event === 'SIGNED_OUT') {
-      showScreen('authScreen');
+  // ─── AUTH TABS ───
+  let authMode = 'login';
+  document.querySelectorAll('.auth-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      authMode = tab.dataset.tab;
+      document.getElementById('authSubmit').textContent = authMode === 'login' ? 'Войти' : 'Зарегистрироваться';
+      document.getElementById('authNameWrap').style.display = authMode === 'register' ? 'block' : 'none';
+      document.getElementById('authError').style.display = 'none';
+      document.getElementById('authSuccess').style.display = 'none';
+    });
+  });
+
+  // ─── AUTH FORM ───
+  document.getElementById('authForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('authSubmit');
+    const email = document.getElementById('authEmail').value.trim();
+    const password = document.getElementById('authPassword').value;
+    const name = document.getElementById('authName').value.trim();
+    const errEl = document.getElementById('authError');
+    const succEl = document.getElementById('authSuccess');
+
+    btn.disabled = true;
+    errEl.style.display = 'none';
+    succEl.style.display = 'none';
+
+    try {
+      if (authMode === 'login') {
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        await initApp(data.user);
+      } else {
+        const { data, error } = await sb.auth.signUp({ email, password });
+        if (error) throw error;
+        // Создаём запись мастера
+        if (data.user) {
+          await sb.from('masters').insert({ user_id: data.user.id, name: name || email.split('@')[0] });
+          await sb.from('settings').insert({ master_id: (await getMaster(data.user.id))?.id });
+        }
+        succEl.textContent = 'Аккаунт создан! Проверьте email для подтверждения, затем войдите.';
+        succEl.style.display = 'block';
+      }
+    } catch (err) {
+      errEl.textContent = translateError(err.message);
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
     }
   });
-});
 
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-// ── AUTH ──
-function switchTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.auth-form').forEach(f => f.classList.add('hidden'));
-  document.getElementById('tab' + (tab === 'reg' ? 'Reg' : 'Login')).classList.add('active');
-  document.getElementById('form' + (tab === 'reg' ? 'Reg' : 'Login')).classList.remove('hidden');
-}
-
-async function register() {
-  const name = document.getElementById('regName').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const pass = document.getElementById('regPass').value;
-  const errEl = document.getElementById('regError');
-  const btn = document.getElementById('regBtn');
-  errEl.style.display = 'none';
-  if (!name || !email || !pass) { showErr(errEl, 'Заполните все поля'); return; }
-  if (pass.length < 6) { showErr(errEl, 'Пароль минимум 6 символов'); return; }
-  btn.disabled = true; btn.textContent = 'Создаём аккаунт...';
-  const { data, error } = await sb.auth.signUp({ email, password: pass, options: { data: { name } } });
-  if (error) { showErr(errEl, translateError(error.message)); btn.disabled = false; btn.textContent = 'Создать аккаунт →'; return; }
-  // TG уведомление
-  try {
-    await fetch('https://api.telegram.org/bot8249396985:AAEouxAuV1lK4cGV8aO0UG_TxALB9DBgQ9A/sendMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: '204188164', text: '🌸 Новая регистрация в Posta\n\n👤 ' + name + '\n📧 ' + email + '\n🕐 ' + new Date().toLocaleString('ru-RU', {timeZone: 'Europe/Moscow'}) })
-    });
-  } catch(e) {}
-  // Показываем экран "проверьте почту"
-    const authBox = document.getElementById('authBox');
-  authBox.innerHTML = '<div style="text-align:center;padding:20px 0;">'
-    + '<div style="font-family:var(--font-display);font-size:64px;color:var(--accent);line-height:1;margin-bottom:24px;">&#10022;</div>'
-    + '<h2 style="font-family:var(--font-display);font-size:32px;font-weight:300;color:var(--cream);margin-bottom:16px;">&#1055;&#1088;&#1086;&#1074;&#1077;&#1088;&#1100;&#1090;&#1077; <em style="font-style:italic;color:var(--accent);">&#1087;&#1086;&#1095;&#1090;&#1091;</em></h2>'
-    + '<p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin-bottom:8px;">&#1052;&#1099; &#1086;&#1090;&#1087;&#1088;&#1072;&#1074;&#1080;&#1083;&#1080; &#1087;&#1080;&#1089;&#1100;&#1084;&#1086; &#1085;&#1072; <strong style="color:var(--cream);">' + email + '</strong></p>'
-    + '<p style="font-size:14px;color:rgba(250,247,242,0.6);line-height:1.7;margin-bottom:32px;">&#1055;&#1077;&#1088;&#1077;&#1081;&#1076;&#1080;&#1090;&#1077; &#1087;&#1086; &#1089;&#1089;&#1099;&#1083;&#1082;&#1077; &#1074; &#1087;&#1080;&#1089;&#1100;&#1084;&#1077; &#8212; &#1080; &#1074;&#1099; &#1086;&#1082;&#1072;&#1078;&#1077;&#1090;&#1077;&#1089;&#1100; &#1074; &#1083;&#1080;&#1095;&#1085;&#1086;&#1084; &#1082;&#1072;&#1073;&#1080;&#1085;&#1077;&#1090;&#1077;.</p>'
-    + '<p style="font-size:12px;color:rgba(250,247,242,0.3);">&#1055;&#1080;&#1089;&#1100;&#1084;&#1086; &#1085;&#1077; &#1087;&#1088;&#1080;&#1096;&#1083;&#1086;? &#1055;&#1088;&#1086;&#1074;&#1077;&#1088;&#1100;&#1090;&#1077; &#1087;&#1072;&#1087;&#1082;&#1091; &#171;&#1057;&#1087;&#1072;&#1084;&#187;</p>'
-    + '</div>';
-}
-
-async function login() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const errEl = document.getElementById('loginError');
-  const btn = document.getElementById('loginBtn');
-  errEl.style.display = 'none';
-  if (!email || !pass) { showErr(errEl, 'Заполните все поля'); return; }
-  btn.disabled = true; btn.textContent = 'Входим...';
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { showErr(errEl, translateError(error.message)); btn.disabled = false; btn.textContent = 'Войти →'; }
-}
-
-async function logout() {
-  await sb.auth.signOut();
-}
-
-function showErr(el, msg) { el.textContent = msg; el.style.display = 'block'; }
-
-function translateError(msg) {
-  if (msg.includes('Invalid login')) return 'Неверный email или пароль';
-  if (msg.includes('already registered')) return 'Этот email уже зарегистрирован';
-  if (msg.includes('Password')) return 'Пароль слишком короткий';
-  if (msg.includes('valid email')) return 'Введите корректный email';
-  return msg;
-}
-
-// ── DASHBOARD ──
-async function enterDash() {
-  showScreen('dashScreen');
-  document.getElementById('navUserEmail').textContent = currentUser.email;
-  // Загружаем профиль
-  const { data } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
-  if (data) {
-    profile = data;
-    const name = data.name || currentUser.email.split('@')[0];
-    document.getElementById('greetName').textContent = name;
-    loadProfileIntoForm(data);
-    updateStatusCards(data);
+  function translateError(msg) {
+    if (msg.includes('Invalid login')) return 'Неверный email или пароль';
+    if (msg.includes('Email not confirmed')) return 'Подтвердите email перед входом';
+    if (msg.includes('already registered')) return 'Этот email уже зарегистрирован';
+    if (msg.includes('Password should be at least')) return 'Пароль минимум 6 символов';
+    return msg;
   }
-  // Загружаем фото
-  await loadPhotos();
-  goStep(0);
-}
 
-function loadProfileIntoForm(d) {
-  if (d.name) document.getElementById('f-name').value = d.name;
-  if (d.phone) document.getElementById('f-phone').value = d.phone;
-  if (d.city) document.getElementById('f-city').value = d.city;
-  if (d.brand) document.getElementById('f-brand').value = d.brand;
-  if (d.services) document.getElementById('f-services').value = d.services;
-  if (d.usp) document.getElementById('f-usp').value = d.usp;
-  if (d.promo) document.getElementById('f-promo').value = d.promo;
-  if (d.links) document.getElementById('f-links').value = d.links;
-  if (d.pmpkey) document.getElementById('f-pmpkey').value = d.pmpkey;
-  if (d.frequency) { freqVal = d.frequency; document.getElementById('f-freq').value = d.frequency; }
-  // Опции
-  if (d.specialization) restoreOpt('opt-spec', d.specialization, false);
-  if (d.work_format) restoreOpt('opt-work', d.work_format, false);
-  if (d.tone) restoreOpt('opt-tone', d.tone, false);
-  if (d.emoji) restoreOpt('opt-emoji', d.emoji, false);
-  if (d.post_style) restoreOpt('opt-style', d.post_style, false);
-  if (d.socials) d.socials.forEach(s => restoreOpt('opt-social', s, true));
-  if (d.frequency) {
-    document.querySelectorAll('.freq-item').forEach(i => i.classList.remove('selected'));
-    document.querySelectorAll('.freq-item').forEach(i => {
-      if (i.querySelector('.freq-num').textContent.includes(d.frequency.split(' ')[0])) i.classList.add('selected');
-    });
+  // ─── GET MASTER ───
+  async function getMaster(userId) {
+    const { data } = await sb.from('masters').select('*').eq('user_id', userId).single();
+    return data;
   }
-}
 
-function restoreOpt(groupId, val, isCheck) {
-  document.querySelectorAll('#' + groupId + ' .opt').forEach(o => {
-    if (isCheck) { if (o.dataset.val === val) o.classList.add('selected'); }
-    else { if (o.dataset.val === val) o.classList.add('selected'); }
+  async function getSettings(masterId) {
+    const { data } = await sb.from('settings').select('*').eq('master_id', masterId).single();
+    return data;
+  }
+
+  // ─── INIT APP ───
+  async function initApp(user) {
+    currentUser = user;
+    currentMaster = await getMaster(user.id);
+
+    // Если мастер не создан (например старый юзер)
+    if (!currentMaster) {
+      await sb.from('masters').insert({ user_id: user.id, name: user.email.split('@')[0] });
+      currentMaster = await getMaster(user.id);
+    }
+
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+
+    await loadSettings();
+    await loadPhotos();
+    await loadPosts();
+  }
+
+  // ─── CHECK SESSION ───
+  sb.auth.getSession().then(({ data: { session } }) => {
+    if (session) initApp(session.user);
   });
-}
 
-function updateStatusCards(d) {
-  const hasProfile = d.name && d.city && d.services;
-  const hasPhotos = uploadedPhotos.length >= 1;
-  const hasSocial = d.socials && d.socials.length > 0;
+  // ─── LOGOUT ───
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    currentUser = null;
+    currentMaster = null;
+    document.getElementById('appScreen').style.display = 'none';
+    document.getElementById('authScreen').style.display = 'flex';
+  });
 
-  const dot1 = document.getElementById('dot-profile');
-  const dot2 = document.getElementById('dot-photos');
-  const dot3 = document.getElementById('dot-social');
-
-  if (hasProfile) { dot1.className = 'status-dot green'; document.querySelector('#statusCards .status-card:nth-child(1) .status-title').textContent = 'Анкета заполнена ✓'; }
-  if (hasPhotos) { dot2.className = 'status-dot green'; document.querySelector('#statusCards .status-card:nth-child(2) .status-title').textContent = `Фото загружены (${uploadedPhotos.length}) ✓`; }
-  if (hasSocial) { dot3.className = 'status-dot green'; document.querySelector('#statusCards .status-card:nth-child(3) .status-title').textContent = 'Соцсети: ' + d.socials.join(', ') + ' ✓'; }
-}
-
-// ── NAVIGATION ──
-function goStep(n) {
-  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.prog-step').forEach(p => p.classList.remove('active'));
-  document.getElementById('step' + n).classList.add('active');
-  document.getElementById('prog' + n).classList.add('active');
-  currentStep = n;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ── OPTIONS ──
-function pickOpt(el, groupId, isCheck) {
-  if (isCheck) { el.classList.toggle('selected'); }
-  else { document.querySelectorAll('#' + groupId + ' .opt').forEach(o => o.classList.remove('selected')); el.classList.add('selected'); }
-}
-function getOptVal(groupId) { const s = document.querySelector('#' + groupId + ' .opt.selected'); return s ? s.dataset.val : ''; }
-function getOptVals(groupId) { return [...document.querySelectorAll('#' + groupId + ' .opt.selected')].map(o => o.dataset.val); }
-function pickFreq(el, val) { document.querySelectorAll('.freq-item').forEach(i => i.classList.remove('selected')); el.classList.add('selected'); freqVal = val; document.getElementById('f-freq').value = val; }
-
-// ── SAVE STEPS ──
-async function saveStep1() {
-  const d = { name: document.getElementById('f-name').value.trim(), phone: document.getElementById('f-phone').value.trim(), specialization: getOptVal('opt-spec'), city: document.getElementById('f-city').value.trim(), work_format: getOptVal('opt-work') };
-  if (!d.name || !d.city) { alert('Заполните имя и город'); return; }
-  await saveProfile(d);
-  document.getElementById('greetName').textContent = d.name;
-  showSave('save1');
-  setTimeout(() => goStep(2), 800);
-}
-async function saveStep2() {
-  const d = { brand: document.getElementById('f-brand').value.trim(), services: document.getElementById('f-services').value.trim(), usp: document.getElementById('f-usp').value.trim(), promo: document.getElementById('f-promo').value.trim() };
-  if (!d.services) { alert('Укажите услуги и цены'); return; }
-  await saveProfile(d);
-  showSave('save2');
-  setTimeout(() => goStep(3), 800);
-}
-async function saveStep3() {
-  const d = { tone: getOptVal('opt-tone'), emoji: getOptVal('opt-emoji'), post_style: getOptVal('opt-style') };
-  if (!d.tone) { alert('Выберите стиль общения'); return; }
-  await saveProfile(d);
-  showSave('save3');
-  setTimeout(() => goStep(4), 800);
-}
-async function saveStep4() {
-  const d = { socials: getOptVals('opt-social'), links: document.getElementById('f-links').value.trim(), frequency: freqVal, pmpkey: document.getElementById('f-pmpkey').value.trim() };
-  if (!d.socials.length) { alert('Выберите хотя бы одну соцсеть'); return; }
-  await saveProfile(d);
-  showSave('save4');
-  setTimeout(() => goStep(5), 800);
-}
-async function finish() {
-  await loadPhotos();
-  updateStatusCards(profile);
-  showSave('save5');
-  // Уведомление что анкета заполнена
-  try {
-    const socials = profile.socials ? profile.socials.join(', ') : '—';
-    await fetch('https://api.telegram.org/bot8249396985:AAEouxAuV1lK4cGV8aO0UG_TxALB9DBgQ9A/sendMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: '204188164',
-        text: '✅ Анкета заполнена — Posta\n\n👤 ' + (profile.name || '—') + '\n📍 ' + (profile.city || '—') + '\n💅 ' + (profile.specialization || '—') + '\n📲 ' + socials + '\n📸 Фото: ' + uploadedPhotos.length + ' шт.\n\n💰 Услуги:\n' + (profile.services || '—')
-      })
+  // ─── NAV TABS ───
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(`panel-${tab.dataset.panel}`).classList.add('active');
     });
-  } catch(e) { console.error('TG notify error:', e); }
-  setTimeout(() => goStep(0), 800);
-}
+  });
 
-async function saveProfile(data) {
-  profile = { ...profile, ...data };
-  const payload = { id: currentUser.id, ...profile, updated_at: new Date().toISOString() };
-  const { error } = await sb.from('profiles').upsert(payload, { onConflict: 'id' }).select();
-  if (error) {
-    console.error('Save error:', error.message);
-    alert('Ошибка сохранения: ' + error.message);
-  }
-}
+  // ─── AUTOPILOT TOGGLE ───
+  document.getElementById('autopilotToggle').addEventListener('change', async (e) => {
+    if (!currentMaster) return;
+    await sb.from('settings').upsert({ master_id: currentMaster.id, autopilot_enabled: e.target.checked });
+    showToast(e.target.checked ? 'Автопилот включён' : 'Автопилот выключен');
+  });
 
-function showSave(id) {
-  const el = document.getElementById(id);
-  el.classList.add('visible');
-  setTimeout(() => el.classList.remove('visible'), 2000);
-}
+  // ─── LOAD SETTINGS ───
+  async function loadSettings() {
+    const master = currentMaster;
+    const settings = await getSettings(master.id);
 
-// ── PHOTOS ──
-async function handleFiles(files) {
-  const grid = document.getElementById('photoGrid');
-  for (const file of files) {
-    if (!file.type.startsWith('image/')) continue;
-    if (file.size > 10 * 1024 * 1024) { alert(`${file.name} слишком большой (максимум 10 МБ)`); continue; }
+    // Заполняем поля
+    document.getElementById('s_name').value = master.name || '';
+    document.getElementById('s_city').value = master.city || '';
+    document.getElementById('s_niche').value = master.niche || '';
+    document.getElementById('s_booking_link').value = master.booking_link || '';
+    document.getElementById('s_services').value = master.services || '';
+    document.getElementById('s_style_notes').value = master.style_notes || '';
+    document.getElementById('s_promo').value = master.promo || '';
 
-    // Превью
-    const reader = new FileReader();
-    const thumb = document.createElement('div');
-    thumb.className = 'photo-thumb';
-    thumb.innerHTML = `<div class="thumb-status">загрузка...</div>`;
-    grid.appendChild(thumb);
+    if (settings) {
+      document.getElementById('autopilotToggle').checked = settings.autopilot_enabled ?? true;
+      document.getElementById('s_review').checked = settings.review_before_publish ?? false;
+      document.getElementById('s_posts_per_week').value = settings.posts_per_week || 3;
 
-    reader.onload = e => {
-      thumb.innerHTML = `<img src="${e.target.result}"><div class="thumb-status">загрузка...</div>`;
-    };
-    reader.readAsDataURL(file);
-
-    // Загрузка в Supabase Storage
-    const path = `${currentUser.id}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-    const { data, error } = await sb.storage.from('photos').upload(path, file, { upsert: false });
-    if (error) {
-      thumb.querySelector('.thumb-status').textContent = '✗ ошибка';
-      console.error(error);
-    } else {
-      thumb.querySelector('.thumb-status').className = 'thumb-status ok';
-      thumb.querySelector('.thumb-status').textContent = '✓';
-      uploadedPhotos.push(path);
-      // Удаление
-      const del = document.createElement('div');
-      del.className = 'thumb-del';
-      del.textContent = '✕';
-      del.onclick = async () => { await sb.storage.from('photos').remove([path]); uploadedPhotos = uploadedPhotos.filter(p => p !== path); thumb.remove(); };
-      thumb.appendChild(del);
+      const platforms = settings.platforms_enabled || {};
+      document.getElementById('p_instagram').checked = platforms.instagram ?? true;
+      document.getElementById('p_vk').checked = platforms.vk ?? true;
+      document.getElementById('p_telegram').checked = platforms.telegram ?? true;
     }
   }
-  document.getElementById('photoInput').value = '';
-}
 
-async function loadPhotos() {
-  const { data } = await sb.storage.from('photos').list(currentUser.id);
-  if (data) {
-    uploadedPhotos = data.map(f => `${currentUser.id}/${f.name}`);
+  // ─── SAVE SETTINGS ───
+  document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+    const btn = document.getElementById('saveSettingsBtn');
+    btn.disabled = true;
+    btn.textContent = 'Сохранение...';
+
+    try {
+      await sb.from('masters').update({
+        name: document.getElementById('s_name').value,
+        city: document.getElementById('s_city').value,
+        niche: document.getElementById('s_niche').value,
+        booking_link: document.getElementById('s_booking_link').value,
+        services: document.getElementById('s_services').value,
+        style_notes: document.getElementById('s_style_notes').value,
+        promo: document.getElementById('s_promo').value,
+      }).eq('id', currentMaster.id);
+
+      await sb.from('settings').upsert({
+        master_id: currentMaster.id,
+        review_before_publish: document.getElementById('s_review').checked,
+        posts_per_week: parseInt(document.getElementById('s_posts_per_week').value),
+        platforms_enabled: {
+          instagram: document.getElementById('p_instagram').checked,
+          vk: document.getElementById('p_vk').checked,
+          telegram: document.getElementById('p_telegram').checked,
+        }
+      });
+
+      currentMaster = await getMaster(currentUser.id);
+      showToast('Настройки сохранены ✓');
+    } catch (err) {
+      showToast('Ошибка сохранения', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Сохранить настройки';
+    }
+  });
+
+  // ─── PHOTOS ───
+  const uploadZone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+
+  uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadZone.classList.remove('dragover');
+    uploadFiles(e.dataTransfer.files);
+  });
+
+  fileInput.addEventListener('change', (e) => uploadFiles(e.target.files));
+
+  async function uploadFiles(files) {
+    if (!currentMaster) return;
+    const arr = Array.from(files);
+    if (!arr.length) return;
+
+    showToast(`Загружаю ${arr.length} фото...`);
+
+    for (const file of arr) {
+      if (file.size > 10 * 1024 * 1024) {
+        showToast(`${file.name} слишком большой (макс 10MB)`, 'error');
+        continue;
+      }
+
+      const ext = file.name.split('.').pop();
+      const path = `photos/${currentMaster.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+      const { error: uploadError } = await sb.storage.from('photos').upload(path, file);
+      if (uploadError) {
+        showToast(`Ошибка загрузки ${file.name}`, 'error');
+        continue;
+      }
+
+      const { data: urlData } = sb.storage.from('photos').getPublicUrl(path);
+
+      await sb.from('photos').insert({
+        master_id: currentMaster.id,
+        storage_path: path,
+        public_url: urlData.publicUrl,
+        original_name: file.name,
+        status: 'pending'
+      });
+    }
+
+    showToast('Фото загружены ✓');
+    await loadPhotos();
+    fileInput.value = '';
+  }
+
+  async function loadPhotos() {
     const grid = document.getElementById('photoGrid');
-    grid.innerHTML = '';
-    for (const f of data) {
-      const { data: { publicUrl } } = sb.storage.from('photos').getPublicUrl(`${currentUser.id}/${f.name}`);
-      const path = `${currentUser.id}/${f.name}`;
-      const thumb = document.createElement('div');
-      thumb.className = 'photo-thumb';
-      thumb.innerHTML = `<img src="${publicUrl}" loading="lazy"><div class="thumb-status ok">✓</div>`;
-      const del = document.createElement('div');
-      del.className = 'thumb-del'; del.textContent = '✕';
-      del.onclick = async () => { await sb.storage.from('photos').remove([path]); uploadedPhotos = uploadedPhotos.filter(p => p !== path); thumb.remove(); };
-      thumb.appendChild(del);
-      grid.appendChild(thumb);
-    }
-  }
-}
+    const { data: photos, error } = await sb.from('photos')
+      .select('*')
+      .eq('master_id', currentMaster.id)
+      .order('created_at', { ascending: false });
 
-// Drag & drop
-const zone = document.getElementById('uploadZone');
-zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
-zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+    if (!photos || photos.length === 0) {
+      grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📷</div><div class="empty-text">Пока нет фото. Загрузите первое!</div></div>';
+      return;
+    }
+
+    grid.innerHTML = photos.map(p => `
+      <div class="photo-card" data-id="${p.id}">
+        <img src="${p.public_url || ''}" alt="${p.original_name}" onerror="this.style.display='none'">
+        <div class="photo-status ${p.status}">${statusLabel(p.status)}</div>
+        <button class="photo-delete" onclick="deletePhoto('${p.id}', '${p.storage_path}')">×</button>
+      </div>
+    `).join('');
+  }
+
+  function statusLabel(s) {
+    return { pending: 'Ожидает', processing: 'Обрабатывается', used: 'Готово', skipped: 'Пропущено' }[s] || s;
+  }
+
+  async function deletePhoto(id, path) {
+    await sb.storage.from('photos').remove([path]);
+    await sb.from('photos').delete().eq('id', id);
+    showToast('Фото удалено');
+    loadPhotos();
+  }
+
+  // ─── POSTS ───
+  async function loadPosts() {
+    const list = document.getElementById('postsList');
+    const { data: posts } = await sb.from('posts')
+      .select('*, photos(public_url)')
+      .eq('master_id', currentMaster.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (!posts || posts.length === 0) {
+      list.innerHTML = '<div class="empty-state"><div class="empty-icon">✦</div><div class="empty-text">Постов пока нет — они появятся после обработки фото</div></div>';
+      return;
+    }
+
+    // Группируем по photo_id
+    const grouped = {};
+    posts.forEach(p => {
+      if (!grouped[p.photo_id]) grouped[p.photo_id] = { photo: p.photos, items: [] };
+      grouped[p.photo_id].items.push(p);
+    });
+
+    list.innerHTML = Object.entries(grouped).map(([photoId, group]) => {
+      const platforms = group.items;
+      const first = platforms[0];
+      return `
+        <div class="post-card" data-photo="${photoId}">
+          ${group.photo?.public_url
+            ? `<img class="post-thumb" src="${group.photo.public_url}" alt="">`
+            : `<div class="post-thumb"></div>`}
+          <div class="post-meta">
+            <div class="post-platform-tabs">
+              ${platforms.map((p, i) => `
+                <div class="post-platform-tab ${i === 0 ? 'active' : ''}"
+                  onclick="switchPlatformTab(this, '${p.id}')"
+                  data-post-id="${p.id}">
+                  ${platformLabel(p.platform)}
+                </div>
+              `).join('')}
+            </div>
+            ${platforms.map((p, i) => `
+              <div class="post-content" id="content_${p.id}" style="${i !== 0 ? 'display:none' : ''}">
+                <div class="post-caption">${p.caption || '—'}</div>
+                <div class="post-hashtags">${p.hashtags || ''}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="post-actions">
+            <div class="post-status-badge ${first.status}">${postStatusLabel(first.status)}</div>
+            ${first.scheduled_at ? `<div class="post-scheduled">${formatDate(first.scheduled_at)}</div>` : ''}
+            <button class="btn-regenerate" onclick="regeneratePost('${photoId}')">↻ Пересоздать</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function switchPlatformTab(el, postId) {
+    const card = el.closest('.post-card');
+    card.querySelectorAll('.post-platform-tab').forEach(t => t.classList.remove('active'));
+    card.querySelectorAll('.post-content').forEach(c => c.style.display = 'none');
+    el.classList.add('active');
+    document.getElementById(`content_${postId}`).style.display = 'block';
+  }
+
+  function platformLabel(p) {
+    return { instagram: 'Instagram', vk: 'VK', telegram: 'TG' }[p] || p;
+  }
+
+  function postStatusLabel(s) {
+    return { draft: 'Черновик', published: 'Опубликован', error: 'Ошибка' }[s] || s;
+  }
+
+  function formatDate(d) {
+    return new Date(d).toLocaleString('ru', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function regeneratePost(photoId) {
+    showToast('Функция появится после подключения Make.com');
+  }
+
+  window.deletePhoto = deletePhoto;
+  window.switchPlatformTab = switchPlatformTab;
+  window.regeneratePost = regeneratePost;
 </script>
 </body>
 </html>
